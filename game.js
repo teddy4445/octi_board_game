@@ -1,21 +1,16 @@
-let BOARD_SIZE = 6;
-let TOYS_PER_PLAYER = 4;
-let PLAYER_ONE_BASE = [[1, 1], [1, 2], [1, 3], [1, 4]];
-let PLAYER_TWO_BASE = [[4, 1], [4, 2], [4, 3], [4, 4]];
-
 class Game
 {
 	constructor()
 	{
 		this.toys = [];
-		this.toys.push(Toy(0, 0, 1, 1));
-		this.toys.push(Toy(1, 0, 1, 2));
-		this.toys.push(Toy(2, 0, 1, 3));
-		this.toys.push(Toy(3, 0, 1, 4));
-		this.toys.push(Toy(4, 1, 4, 1));
-		this.toys.push(Toy(5, 1, 4, 2));
-		this.toys.push(Toy(6, 1, 4, 3));
-		this.toys.push(Toy(7, 1, 4, 4));
+		this.toys.push(new Toy(0, 0, 1, 1));
+		this.toys.push(new Toy(1, 0, 1, 2));
+		this.toys.push(new Toy(2, 0, 1, 3));
+		this.toys.push(new Toy(3, 0, 1, 4));
+		this.toys.push(new Toy(4, 1, 5, 1));
+		this.toys.push(new Toy(5, 1, 5, 2));
+		this.toys.push(new Toy(6, 1, 5, 3));
+		this.toys.push(new Toy(7, 1, 5, 4));
 		this.directionSticks = 24;
 	}
 	
@@ -80,7 +75,7 @@ class Toy
 	
 	add_duration(new_duration)
 	{
-		if (this.durations.contains(new_duration))
+		if (this.durations.includes(new_duration))
 		{
 			throw Execption("Duration " + new_duration + " is already taken for toy (%" + this.id + ")");
 		}
@@ -95,7 +90,7 @@ class Toy
 	
 	move(duration)
 	{
-		if (!this.durations.contains(duration))
+		if (!this.durations.includes(duration))
 		{
 			throw Execption("Duration " + duration + " is not avalible for toy (%" + this.id + ")");
 		}
