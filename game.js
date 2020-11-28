@@ -19,6 +19,14 @@ class Game
 		this.toys.push(new Toy(5, 1, 5, 2));
 		this.toys.push(new Toy(6, 1, 5, 3));
 		this.toys.push(new Toy(7, 1, 5, 4));
+		this.toys[7].add_duration(0);
+		this.toys[7].add_duration(1);
+		this.toys[7].add_duration(2);
+		this.toys[7].add_duration(3);
+		this.toys[7].add_duration(4);
+		this.toys[7].add_duration(5);
+		this.toys[7].add_duration(6);
+		this.toys[7].add_duration(7);
 		this.directionSticks = 24;
 	}
 	

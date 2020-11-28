@@ -51,6 +51,16 @@ function draw()
 	drawLines();
 	putMouse();
 	
+	let playerWin = is_win();
+	if (playerWin != NOT_CHOSEN)
+	{
+		alert("win player" + playerWin);
+	}
+}
+
+function is_win()
+{
+	return NOT_CHOSEN;
 }
 
 function drawGame()
@@ -217,7 +227,7 @@ function putMouse()
 	
 	if (is_pick_toy_mode)
 	{
-		if (NextToNextStep(mouseX, mouseY))
+		if (NextToNextStep(mouseX, mouseY) != NOT_CHOSEN)
 		{
 			stroke(0);	
 			line(mouseX - 5, mouseY, mouseX + 5, mouseY);
