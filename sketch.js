@@ -7,13 +7,14 @@ let GAME_STATES = ["START", "InGame", "WIN"];
 let game_state = GAME_STATES[0];
 let GAME_HEIGHT = 600;
 let GAME_WIDTH = GAME_HEIGHT * 7 / 6;
-let NOT_CHOSEN_TOY = -1;
+let NOT_CHOSEN = -1;
 
 // global game varable
 let game;
 let is_pick_toy_mode;
 let player_turn;
 let pickedToy;
+let thisPossibleNextSteps;
 
 
 // print vars
@@ -36,7 +37,7 @@ function setup()
 	game = new Game();
 	is_pick_toy_mode = false;
 	player_turn = 1;
-	pickedToy = NOT_CHOSEN_TOY;
+	pickedToy = NOT_CHOSEN;
 }
 
 /* Called every x seconds */
@@ -47,7 +48,9 @@ function draw()
 	{
 		drawPickMode();
 	}
+	drawLines();
 	putMouse();
+	
 }
 
 function drawGame()
@@ -56,11 +59,8 @@ function drawGame()
 	drawToys();
 }
 
-function drawBoard()
+function drawLines()
 {
-	// draw game board
-	background("#f0e6dd");
-	// draw lines 
 	strokeWeight(1);
 	stroke(0);
 	// print - lines 
@@ -73,6 +73,19 @@ function drawBoard()
 	{
 		line(boxSize * index, 0, boxSize * index, GAME_WIDTH);
 	}
+	// edges of board
+	strokeWeight(2);
+	line(0, GAME_HEIGHT - 1, GAME_WIDTH, GAME_HEIGHT - 1);
+	line(0, 1, GAME_WIDTH, 1);
+	line(1, 0, 1, GAME_WIDTH);
+	line(GAME_WIDTH - 1, 0, GAME_WIDTH - 1, GAME_WIDTH);
+}
+
+function drawBoard()
+{
+	// draw game board
+	background("#f0e6dd");
+	// draw lines 
 	// draw win boxes
 	for (var winBoxIndex = 0; winBoxIndex < 4; winBoxIndex++)
 	{
@@ -82,12 +95,6 @@ function drawBoard()
 	{
 		tile(PLAYER_TWO_BASE[winBoxIndex][0], PLAYER_ONE_BASE[winBoxIndex][1], boxSize, 233, 110, 66);
 	}
-	// edges of board
-	strokeWeight(2);
-	line(0, GAME_HEIGHT - 1, GAME_WIDTH, GAME_HEIGHT - 1);
-	line(0, 1, GAME_WIDTH, 1);
-	line(1, 0, 1, GAME_WIDTH);
-	line(GAME_WIDTH - 1, 0, GAME_WIDTH - 1, GAME_WIDTH);
 }
 
 function drawToys()
@@ -157,9 +164,9 @@ function drawToys()
 		// draw directions steaks 
 		strokeWeight(10);
 		stroke(150,75,0);
-		for (var directionIndex = 0; directionIndex < game.toys[toyIndex].durations.length; directionIndex++)
+		for (var directionIndex = 0; directionIndex < game.toys[toyIndex].directions.length; directionIndex++)
 		{			
-			switch (game.toys[toyIndex].durations[directionIndex])
+			switch (game.toys[toyIndex].directions[directionIndex])
 			{
 				case 0:
 					line((game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize - boxSize * 0.33, (game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize- boxSize * 0.33 - 10);
@@ -195,6 +202,12 @@ function drawPickMode()
 	fill(color(255, 255, 255, 70));
 	strokeWeight(0);
 	polygon((pickedToy.x + 0.5) * boxSize , (pickedToy.y + 0.5) * boxSize , boxSize * 0.42, 8);
+	
+	// print all possible_next_steps
+	for (var locationIndex = 0; locationIndex < thisPossibleNextSteps.length; locationIndex++)
+	{
+		tile(thisPossibleNextSteps[locationIndex][0], thisPossibleNextSteps[locationIndex][1], boxSize, 219, 195, 173);
+	}
 }
 
 
@@ -206,7 +219,7 @@ function putMouse()
 	{
 		if (NextToNextStep(mouseX, mouseY))
 		{
-			stroke(255);	
+			stroke(0);	
 			line(mouseX - 5, mouseY, mouseX + 5, mouseY);
 			line(mouseX, mouseY - 5, mouseX, mouseY + 5);
 		}
@@ -235,7 +248,7 @@ function putMouse()
 	{	
 		stroke(0);	
 		// check if toy we can pick
-		if (clickNextToPickToy(mouseX, mouseY) != NOT_CHOSEN_TOY)
+		if (clickNextToPickToy(mouseX, mouseY) != NOT_CHOSEN)
 		{
 			line(mouseX - 5, mouseY, mouseX + 5, mouseY);
 			line(mouseX, mouseY - 5, mouseX, mouseY + 5);
@@ -265,7 +278,22 @@ function mouseClicked()
 		if(onSamePickToy(nowMouseX, nowMouseY))
 		{
 			is_pick_toy_mode = false;
-			pickedToy = NOT_CHOSEN_TOY;
+			pickedToy = NOT_CHOSEN;
+		}
+		var nextLocationCheck = NextToNextStep(nowMouseX, nowMouseY);
+		if (nextLocationCheck != NOT_CHOSEN)
+		{
+			pickedToy.jump(thisPossibleNextSteps[nextLocationCheck][0], thisPossibleNextSteps[nextLocationCheck][1]);
+			if (player_turn == 1)
+			{
+				player_turn = 2;
+			}
+			else
+			{
+				player_turn = 1;
+			}
+			is_pick_toy_mode = false;
+			pickedToy = NOT_CHOSEN;
 		}
 	}
 	else
@@ -273,10 +301,13 @@ function mouseClicked()
 		// find if hiting some node
 		var nextToNode = clickNextToPickToy(nowMouseX, nowMouseY);
 		
-		if(nextToNode != NOT_CHOSEN_TOY)
+		if(nextToNode != NOT_CHOSEN)
 		{
 			is_pick_toy_mode = true;
+			// set the toy we are using now
 			pickedToy = nextToNode;
+			// find where it can go
+			thisPossibleNextSteps = game.possible_next_steps(pickedToy.id);
 		}		
 	}
 }
@@ -285,17 +316,24 @@ function clickNextToPickToy(checkX, checkY)
 {
 	for (var toyIndex = 0; toyIndex < game.toys.length; toyIndex++)
 	{
-		if ((player_turn == 1 && game.toys[toyIndex].color == 0 && dist(checkX, checkY, (game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize) < boxSize * 0.33) || (player_turn == 2 && game.toys[toyIndex].color == 1 && dist(checkX, checkY, (game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize) < boxSize * 0.33))
+		if ((player_turn == 1 && game.toys[toyIndex].color == 0 && dist(checkX, checkY, (game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize) < boxSize) || (player_turn == 2 && game.toys[toyIndex].color == 1 && dist(checkX, checkY, (game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize) < boxSize * 0.33))
 		{
 			return game.toys[toyIndex];
 		}
 	}
-	return NOT_CHOSEN_TOY;
+	return NOT_CHOSEN;
 }
 
 function NextToNextStep(checkX, checkY)
-{
-	return false;
+{	
+	for (var nextLocationIndex = 0; nextLocationIndex < thisPossibleNextSteps.length; nextLocationIndex++)
+	{
+		if (dist((thisPossibleNextSteps[nextLocationIndex][0] + 0.5) * boxSize, (thisPossibleNextSteps[nextLocationIndex][1] + 0.5) * boxSize, checkX, checkY) < boxSize * 0.33)
+		{
+			return nextLocationIndex;
+		}
+	}
+	return NOT_CHOSEN;
 }
 
 function NextToNewDirection(checkX, checkY)
