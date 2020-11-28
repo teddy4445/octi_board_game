@@ -54,12 +54,50 @@ function draw()
 	let playerWin = is_win();
 	if (playerWin != NOT_CHOSEN)
 	{
-		alert("win player" + playerWin);
+		alert("player " + playerWin + " win");
+		noLoop();
+		setTimeout(function (){
+			game = new Game();
+			is_pick_toy_mode = false;
+			player_turn = 1;
+			pickedToy = NOT_CHOSEN;
+			loop();
+		}, 2000);
 	}
 }
 
 function is_win()
 {
+	let playerOneToyscounter = 0;
+	let playerTwoToyscounter = 0;
+	for (var toyIndex = 0; toyIndex < game.toys.length; toyIndex++)
+	{
+		if (game.toys[toyIndex].color == 0)
+		{
+			playerOneToyscounter++;
+			if (game.toys[toyIndex].is_in_location(PLAYER_TWO_BASE))
+			{
+				return 1;
+			}
+		}
+		else if (game.toys[toyIndex].color == 1)
+		{
+			playerTwoToyscounter++;
+			if (game.toys[toyIndex].is_in_location(PLAYER_ONE_BASE))
+			{
+				return 2;	
+			}
+		}
+	}
+	// if the second player does not have players to play with
+	if (playerOneToyscounter == 0)
+	{
+		return 2;
+	}
+	else if (playerTwoToyscounter == 0)
+	{
+		return 1;
+	}
 	return NOT_CHOSEN;
 }
 
@@ -216,7 +254,7 @@ function drawPickMode()
 	// print all possible_next_steps
 	for (var locationIndex = 0; locationIndex < thisPossibleNextSteps.length; locationIndex++)
 	{
-		tile(thisPossibleNextSteps[locationIndex][0], thisPossibleNextSteps[locationIndex][1], boxSize, 219, 195, 173);
+		tile(thisPossibleNextSteps[locationIndex].new_x, thisPossibleNextSteps[locationIndex].new_y, boxSize, 219, 195, 173);
 	}
 }
 
@@ -278,7 +316,7 @@ function mouseClicked()
 	var nowMouseY = mouseY;
 	
 	// if click outside the panel, ignore it
-	if (mouseX > GAME_HEIGHT || mouseX < 0 || mouseY > GAME_WIDTH * 2 || mouseY < 0)
+	if (nowMouseX > GAME_WIDTH || nowMouseX < 0 || nowMouseY > GAME_HEIGHT || nowMouseY < 0)
 	{
 		return;
 	}
@@ -293,7 +331,8 @@ function mouseClicked()
 		var nextLocationCheck = NextToNextStep(nowMouseX, nowMouseY);
 		if (nextLocationCheck != NOT_CHOSEN)
 		{
-			pickedToy.jump(thisPossibleNextSteps[nextLocationCheck][0], thisPossibleNextSteps[nextLocationCheck][1]);
+			pickedToy.jump(thisPossibleNextSteps[nextLocationCheck].new_x, thisPossibleNextSteps[nextLocationCheck].new_y);
+			game.kill_list_from_jump(thisPossibleNextSteps[nextLocationCheck]);
 			if (player_turn == 1)
 			{
 				player_turn = 2;
@@ -338,7 +377,7 @@ function NextToNextStep(checkX, checkY)
 {	
 	for (var nextLocationIndex = 0; nextLocationIndex < thisPossibleNextSteps.length; nextLocationIndex++)
 	{
-		if (dist((thisPossibleNextSteps[nextLocationIndex][0] + 0.5) * boxSize, (thisPossibleNextSteps[nextLocationIndex][1] + 0.5) * boxSize, checkX, checkY) < boxSize * 0.33)
+		if (dist((thisPossibleNextSteps[nextLocationIndex].new_x + 0.5) * boxSize, (thisPossibleNextSteps[nextLocationIndex].new_y + 0.5) * boxSize, checkX, checkY) < boxSize * 0.33)
 		{
 			return nextLocationIndex;
 		}

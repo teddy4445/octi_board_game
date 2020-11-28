@@ -82,13 +82,80 @@ class Game
 					break;
 			}
 			// check if valid and empty
-			if (nextLocation[0] >= 0 && nextLocation[0] < BOARD_SIZE && nextLocation[1] >= 0 && nextLocation[1] < BOARD_SIZE + 1 && this.empty_location(nextLocation[0], nextLocation[1]))
+			if (nextLocation[0] >= 0 && nextLocation[0] <= BOARD_SIZE && nextLocation[1] >= 0 && nextLocation[1] <= BOARD_SIZE + 1 && this.empty_location(nextLocation[0], nextLocation[1]))
 			{
-				posibleLocations.push(nextLocation);
+				posibleLocations.push(new Move(wantedToy, nextLocation[0], nextLocation[1], []));
 			}
 		}
 		// 2. check if can jump over other player
+		posibleLocations.push(...this.try_jump_location(wantedToy, [[wantedToy.x, wantedToy.y]], []));
 		
+		return posibleLocations;
+	}
+	
+	try_jump_location(wantedToy, found_positions = [], current_path)
+	{
+		let posibleLocations = [];
+		for (var directionIndex = 0; directionIndex < wantedToy.directions.length; directionIndex++)
+		{
+			var nextLocation = [];
+			var jumpLocation = [];
+			// get next location
+			switch (wantedToy.directions[directionIndex])
+			{
+				case 0:
+					nextLocation = [wantedToy.x - 2, wantedToy.y];
+					jumpLocation = [wantedToy.x - 1, wantedToy.y];
+					break;
+				case 1:
+					nextLocation = [wantedToy.x - 2, wantedToy.y + 2];
+					jumpLocation = [wantedToy.x - 1, wantedToy.y + 1];
+					break;
+				case 2:
+					nextLocation = [wantedToy.x, wantedToy.y + 2];
+					jumpLocation = [wantedToy.x , wantedToy.y + 1];
+					break;
+				case 3:
+					nextLocation = [wantedToy.x + 2, wantedToy.y + 2];
+					jumpLocation = [wantedToy.x + 1, wantedToy.y + 1];
+					break;
+				case 4:
+					nextLocation = [wantedToy.x + 2, wantedToy.y];
+					jumpLocation = [wantedToy.x + 1, wantedToy.y];
+					break;
+				case 5:
+					nextLocation = [wantedToy.x + 2, wantedToy.y - 1];
+					jumpLocation = [wantedToy.x + 1, wantedToy.y - 1];
+					break;
+				case 6:
+					nextLocation = [wantedToy.x, wantedToy.y - 2];
+					jumpLocation = [wantedToy.x, wantedToy.y - 1];
+					break;
+				case 7:
+					nextLocation = [wantedToy.x - 2, wantedToy.y - 2];
+					jumpLocation = [wantedToy.x - 1, wantedToy.y - 1];
+					break;
+			}
+			// check if valid and empty
+			if (nextLocation[0] >= 0 && nextLocation[0] <= BOARD_SIZE && nextLocation[1] >= 0 && nextLocation[1] <= BOARD_SIZE + 1 && this.empty_location(nextLocation[0], nextLocation[1]) && !this.empty_location(jumpLocation[0], jumpLocation[1]) && !locationInSet(found_positions, nextLocation))
+			{
+				let jump_over_toy = this.toy_in_location(jumpLocation[0], nextLocation[1]);
+				if (!current_path.includes(jump_over_toy))
+				{
+					current_path.push(jump_over_toy);
+					posibleLocations.push(new Move(wantedToy, nextLocation[0], nextLocation[1], current_path));
+					found_positions.push(nextLocation);
+					let tempToy = wantedToy.copy();
+					tempToy.x = nextLocation[0];
+					tempToy.y = nextLocation[1];
+					console.log("From location (" + wantedToy.x + ", " + wantedToy.y + ") to location (" + nextLocation[0] + ", " + nextLocation[1] + "), which is order " + current_path.length + ", over = " + JSON.stringify(current_path));
+					if (current_path.length < 2)
+					{
+						posibleLocations.push(...this.try_jump_location(tempToy, found_positions, [...current_path]));	
+					}
+				}
+			}
+		}
 		return posibleLocations;
 	}
 	
@@ -102,6 +169,52 @@ class Game
 			}
 		}
 		return true;
+	}
+	
+	toy_in_location(x, y)
+	{
+		for (var toy_index = 0; toy_index < this.toys.length; toy_index++)
+		{
+			if (this.toys[toy_index].x == x && this.toys[toy_index].y == y)
+			{
+				return this.toys[toy_index].id;
+			}
+		}
+	}
+	
+	can_jump(x, y)
+	{
+		for (var toy_index = 0; toy_index < this.toys.length; toy_index++)
+		{
+			if (this.toys[toy_index].x == x && this.toys[toy_index].y == y)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	kill_list_from_jump(jump_move)
+	{
+		if (jump_move.jump_over_list.length > 0)
+		{
+			let kill_list = [];
+			// get the color of this toy
+			let ourColor = jump_move.toy.color;
+			// find game indexes to kill
+			for (var toy_index = this.toys.length - 1; toy_index >= 0; toy_index--)
+			{
+				if (jump_move.jump_over_list.includes(this.toys[toy_index].id) && this.toys[toy_index].color != ourColor)
+				{
+					kill_list.push(toy_index);
+				}
+			}
+			// kill them 
+			for (var killIndex = 0; killIndex < kill_list.length; killIndex++)
+			{
+				this.toys.splice(kill_list[killIndex], 1);
+			}
+		}
 	}
 	
 	is_player_one_win()
@@ -139,23 +252,39 @@ class Game
 	}
 }
 
+class Move
+{
+	constructor(toy, new_x, new_y, jump_over_list)
+	{
+		this.toy = toy;
+		this.new_x = new_x;
+		this.new_y = new_y;
+		this.jump_over_list = jump_over_list;
+	}
+}
+
 
 class Toy
 {
-	constructor(id, color, x, y)
+	constructor(id, color, x, y, directions = [])
 	{
 		this.id = id;
 		this.color = color;
 		this.x = x;
 		this.y = y;
-		this.directions = [];
+		this.directions = directions;
+	}
+	
+	copy()
+	{
+		return new Toy(this.id, this.color, this.x, this.y, this.directions);
 	}
 	
 	is_in_location(locations)
 	{
 		for (var location_index = 0; location_index < locations.length; location_index++)
 		{
-			if (self.x == locations[location_index][0] && self.y == locations[location_index][1])
+			if (this.x == locations[location_index][0] && this.y == locations[location_index][1])
 			{
 				return true;
 			}
@@ -216,4 +345,16 @@ class Toy
 				break;
 		}
 	}
+}
+
+function locationInSet(locationSet, newLocation)
+{
+	for (var locationIndex = 0; locationIndex < locationSet.length; locationIndex++)
+	{
+		if (locationSet[locationIndex][0] == newLocation[0] && locationSet[locationIndex][1] == newLocation[1])
+		{
+			return true;
+		}
+	}
+	return false;
 }
