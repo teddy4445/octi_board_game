@@ -8,10 +8,12 @@ let game_state = GAME_STATES[0];
 let GAME_HEIGHT = 600;
 let GAME_WIDTH = GAME_HEIGHT * 7 / 6;
 let NOT_CHOSEN = -1;
+let NEW_DIRECTION_MARK_R = 10;
 
 // global game varable
 let game;
 let is_pick_toy_mode;
+let is_re_jump_case;
 let player_turn;
 let pickedToy;
 let thisPossibleNextSteps;
@@ -29,6 +31,7 @@ function setup()
 	let canvasGame = createCanvas(GAME_WIDTH, GAME_HEIGHT);
 	canvasGame.parent('game');
 	noCursor();
+	textAlign(CENTER, CENTER);
 	
 	// get static draw sizes
 	boxSize = Math.floor(GAME_HEIGHT / 6) - 1;
@@ -36,6 +39,7 @@ function setup()
 	// create game
 	game = new Game();
 	is_pick_toy_mode = false;
+	is_re_jump_case = false;
 	player_turn = 1;
 	pickedToy = NOT_CHOSEN;
 }
@@ -48,13 +52,28 @@ function draw()
 	{
 		drawPickMode();
 	}
+	else if (is_re_jump_case)
+	{
+		drawReJumpMode();
+	}
 	drawLines();
 	putMouse();
 	
 	let playerWin = is_win();
 	if (playerWin != NOT_CHOSEN)
 	{
-		alert("player " + playerWin + " win");
+		textSize(32);
+		if (playerWin == 2)
+		{
+			fill(211, 2, 41);
+			stroke(211, 2, 41);
+		}
+		else // if second player win
+		{
+			fill(0, 93, 80);
+			stroke(0, 93, 80);
+		}
+		text("player " + playerWin + " win!", GAME_WIDTH / 2, GAME_HEIGHT / 2);
 		noLoop();
 		setTimeout(function (){
 			game = new Game();
@@ -162,12 +181,16 @@ function drawToys()
 		// mark the players we can play with
 		if (player_turn == 1 && game.toys[toyIndex].color == 0 && !is_pick_toy_mode)
 		{
-			fill(color(255, 255, 255, 70));
+			fill(color(255, 255, 255, 130));
+			strokeWeight(1);
+			stroke(0, 0, 0);
 			polygon((game.toys[toyIndex].x + 0.5) * boxSize , (game.toys[toyIndex].y + 0.5) * boxSize , boxSize * 0.42, 8);
 		}
 		else if (player_turn == 2 && game.toys[toyIndex].color == 1 && !is_pick_toy_mode)
 		{
-			fill(color(255, 255, 255, 70));
+			fill(color(255, 255, 255, 130));
+			strokeWeight(1);
+			stroke(0, 0, 0);
 			polygon((game.toys[toyIndex].x + 0.5) * boxSize , (game.toys[toyIndex].y + 0.5) * boxSize , boxSize * 0.42, 8);
 		}
 		strokeWeight(1);
@@ -217,25 +240,25 @@ function drawToys()
 			switch (game.toys[toyIndex].directions[directionIndex])
 			{
 				case 0:
-					line((game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize - boxSize * 0.33, (game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize- boxSize * 0.33 - 10);
+					line((game.toys[toyIndex].x + 0.5) * boxSize - boxSize * 0.33, (game.toys[toyIndex].y + 0.5) * boxSize, (game.toys[toyIndex].x + 0.5) * boxSize - boxSize * 0.33 - 10, (game.toys[toyIndex].y + 0.5) * boxSize);
 					break;
 				case 1:
 					line((game.toys[toyIndex].x + 0.5) * boxSize + boxSize * 0.25, (game.toys[toyIndex].y + 0.5) * boxSize - boxSize * 0.25, (game.toys[toyIndex].x + 0.5) * boxSize + boxSize * 0.25 + 7, (game.toys[toyIndex].y + 0.5) * boxSize- boxSize * 0.25 - 7);
 					break;
 				case 2:
-					line((game.toys[toyIndex].x + 0.5) * boxSize + boxSize * 0.33, (game.toys[toyIndex].y + 0.5) * boxSize, (game.toys[toyIndex].x + 0.5) * boxSize + boxSize * 0.33 + 10, (game.toys[toyIndex].y + 0.5) * boxSize);
-					break;
-				case 3:
 					line((game.toys[toyIndex].x + 0.5) * boxSize + boxSize * 0.25, (game.toys[toyIndex].y + 0.5) * boxSize + boxSize * 0.25, (game.toys[toyIndex].x + 0.5) * boxSize + boxSize * 0.25 + 7, (game.toys[toyIndex].y + 0.5) * boxSize + boxSize * 0.25 + 7);
 					break;
-				case 4:
-					line((game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize + boxSize * 0.33, (game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize + boxSize * 0.33 + 10);
-					break;
-				case 5:
+				case 3:
 					line((game.toys[toyIndex].x + 0.5) * boxSize - boxSize * 0.25, (game.toys[toyIndex].y + 0.5) * boxSize + boxSize * 0.25, (game.toys[toyIndex].x + 0.5) * boxSize - boxSize * 0.25 - 7, (game.toys[toyIndex].y + 0.5) * boxSize + boxSize * 0.25 + 7);
 					break;
+				case 4:
+					line((game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize - boxSize * 0.33, (game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize- boxSize * 0.33 - 10);
+					break;
+				case 5:
+					line((game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize + boxSize * 0.33, (game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize + boxSize * 0.33 + 10);
+					break;
 				case 6:
-					line((game.toys[toyIndex].x + 0.5) * boxSize - boxSize * 0.33, (game.toys[toyIndex].y + 0.5) * boxSize, (game.toys[toyIndex].x + 0.5) * boxSize - boxSize * 0.33 - 10, (game.toys[toyIndex].y + 0.5) * boxSize);
+					line((game.toys[toyIndex].x + 0.5) * boxSize + boxSize * 0.33, (game.toys[toyIndex].y + 0.5) * boxSize, (game.toys[toyIndex].x + 0.5) * boxSize + boxSize * 0.33 + 10, (game.toys[toyIndex].y + 0.5) * boxSize);
 					break;
 				case 7:
 					line((game.toys[toyIndex].x + 0.5) * boxSize - boxSize * 0.25, (game.toys[toyIndex].y + 0.5) * boxSize - boxSize * 0.25, (game.toys[toyIndex].x + 0.5) * boxSize - boxSize * 0.25 - 7, (game.toys[toyIndex].y + 0.5) * boxSize- boxSize * 0.25 - 7);
@@ -247,8 +270,31 @@ function drawToys()
 
 function drawPickMode()
 {
-	fill(color(255, 255, 255, 70));
-	strokeWeight(0);
+	fill(color(255, 255, 255, 130));
+	strokeWeight(1);
+	stroke(0, 0, 0);
+	polygon((pickedToy.x + 0.5) * boxSize , (pickedToy.y + 0.5) * boxSize , boxSize * 0.42, 8);
+	
+	// print all possible_next_steps
+	for (var locationIndex = 0; locationIndex < thisPossibleNextSteps.length; locationIndex++)
+	{
+		tile(thisPossibleNextSteps[locationIndex].new_x, thisPossibleNextSteps[locationIndex].new_y, boxSize, 219, 195, 173);
+	}
+	
+	// draw the possible edges we can add 
+	for (var directionIndex = 0; directionIndex < thisPossibleNewDirections.length; directionIndex++)
+	{
+		fill(50);
+		stroke(30);
+		addDirectionDot(pickedToy.x, pickedToy.y, thisPossibleNewDirections[directionIndex]);
+	}
+}
+
+function drawReJumpMode()
+{
+	fill(color(255, 255, 255, 130));
+	strokeWeight(1);
+	stroke(0, 0, 0);
 	polygon((pickedToy.x + 0.5) * boxSize , (pickedToy.y + 0.5) * boxSize , boxSize * 0.42, 8);
 	
 	// print all possible_next_steps
@@ -257,7 +303,6 @@ function drawPickMode()
 		tile(thisPossibleNextSteps[locationIndex].new_x, thisPossibleNextSteps[locationIndex].new_y, boxSize, 219, 195, 173);
 	}
 }
-
 
 function putMouse()
 {
@@ -268,15 +313,11 @@ function putMouse()
 		if (NextToNextStep(mouseX, mouseY) != NOT_CHOSEN)
 		{
 			stroke(0);	
-			line(mouseX - 5, mouseY, mouseX + 5, mouseY);
-			line(mouseX, mouseY - 5, mouseX, mouseY + 5);
+			xMouseMark();
 		}
-		else if (NextToNewDirection(mouseX, mouseY))
+		else if (NextToAddDirection(pickedToy.x, pickedToy.y, mouseX, mouseY) != NOT_CHOSEN)
 		{
-			fill(0);
-			circle(mouseX - 5, mouseY - 5, 5);
-			circle(mouseX + 5, mouseY + 5, 5);
-			line(mouseX - 5, mouseY + 5, mouseX + 5, mouseY - 5);
+			vMouseMark();
 		}
 		else if (onSamePickToy(mouseX, mouseY))
 		{
@@ -292,14 +333,30 @@ function putMouse()
 			circle(mouseX, mouseY, 15);
 		}
 	}
+	else if (is_re_jump_case)
+	{
+		stroke(0);	
+		if (NextToNextStep(mouseX, mouseY) != NOT_CHOSEN)
+		{
+			xMouseMark();
+		}
+		else if (onSamePickToy(mouseX, mouseY))
+		{
+			vMouseMark();
+		}
+		else
+		{
+			fill(0);
+			circle(mouseX, mouseY, 15);
+		}
+	}
 	else
 	{	
 		stroke(0);	
 		// check if toy we can pick
 		if (clickNextToPickToy(mouseX, mouseY) != NOT_CHOSEN)
 		{
-			line(mouseX - 5, mouseY, mouseX + 5, mouseY);
-			line(mouseX, mouseY - 5, mouseX, mouseY + 5);
+			xMouseMark();
 		}
 		else
 		{
@@ -323,7 +380,13 @@ function mouseClicked()
 	
 	if (is_pick_toy_mode)
 	{
-		if(onSamePickToy(nowMouseX, nowMouseY))
+		let nextDirection = NextToAddDirection(pickedToy.x, pickedToy.y, nowMouseX, nowMouseY);
+		if (nextDirection != NOT_CHOSEN)
+		{
+			pickedToy.add_duration(nextDirection);
+			swithPlayer();
+		}
+		else if(onSamePickToy(nowMouseX, nowMouseY))
 		{
 			is_pick_toy_mode = false;
 			pickedToy = NOT_CHOSEN;
@@ -332,17 +395,54 @@ function mouseClicked()
 		if (nextLocationCheck != NOT_CHOSEN)
 		{
 			pickedToy.jump(thisPossibleNextSteps[nextLocationCheck].new_x, thisPossibleNextSteps[nextLocationCheck].new_y);
-			game.kill_list_from_jump(thisPossibleNextSteps[nextLocationCheck]);
-			if (player_turn == 1)
+			if (thisPossibleNextSteps[nextLocationCheck].is_jump)
 			{
-				player_turn = 2;
+				game.kill_list_from_jump(thisPossibleNextSteps[nextLocationCheck]);	
+				thisPossibleNextSteps = game.possible_next_steps(pickedToy.id, false);
+				if (thisPossibleNextSteps.length > 0)
+				{
+					is_re_jump_case = true;
+					is_pick_toy_mode = false;
+				}
+				else
+				{
+					swithPlayer();
+				}
 			}
 			else
 			{
-				player_turn = 1;
+				swithPlayer();
 			}
-			is_pick_toy_mode = false;
-			pickedToy = NOT_CHOSEN;
+		}
+	}
+	else if (is_re_jump_case)
+	{
+		if(onSamePickToy(nowMouseX, nowMouseY))
+		{
+			swithPlayer();
+		}
+		var nextLocationCheck = NextToNextStep(nowMouseX, nowMouseY);
+		if (nextLocationCheck != NOT_CHOSEN)
+		{
+			pickedToy.jump(thisPossibleNextSteps[nextLocationCheck].new_x, thisPossibleNextSteps[nextLocationCheck].new_y);
+			if (thisPossibleNextSteps[nextLocationCheck].is_jump)
+			{
+				game.kill_list_from_jump(thisPossibleNextSteps[nextLocationCheck]);	
+				thisPossibleNextSteps = game.possible_next_steps(pickedToy.id, false);
+				if (thisPossibleNextSteps.length > 0)
+				{
+					is_re_jump_case = true;
+					is_pick_toy_mode = false;
+				}
+				else
+				{
+					swithPlayer();
+				}
+			}
+			else
+			{
+				swithPlayer();
+			}
 		}
 	}
 	else
@@ -356,9 +456,25 @@ function mouseClicked()
 			// set the toy we are using now
 			pickedToy = nextToNode;
 			// find where it can go
-			thisPossibleNextSteps = game.possible_next_steps(pickedToy.id);
+			thisPossibleNextSteps = game.possible_next_steps(pickedToy.id, true);
+			thisPossibleNewDirections = pickedToy.get_open_directions();
 		}		
 	}
+}
+
+function swithPlayer()
+{
+	if (player_turn == 1)
+	{
+		player_turn = 2;
+	}
+	else
+	{
+		player_turn = 1;
+	}
+	is_pick_toy_mode = false;
+	is_re_jump_case = false;
+	pickedToy = NOT_CHOSEN;	
 }
 
 function clickNextToPickToy(checkX, checkY)
@@ -385,9 +501,44 @@ function NextToNextStep(checkX, checkY)
 	return NOT_CHOSEN;
 }
 
-function NextToNewDirection(checkX, checkY)
-{
-	return false;
+function NextToAddDirection(toyX, toyY, checkX, checkY)
+{	
+	for (var directionIndex = 0; directionIndex < thisPossibleNewDirections.length; directionIndex++)
+	{
+	let shift = [];
+	switch (thisPossibleNewDirections[directionIndex])
+	{
+		case 0:
+			shift = [-1, 0];
+			break;
+		case 1:
+			shift = [-1, 1];
+			break;
+		case 2:
+			shift = [0, 1];
+			break;
+		case 3:
+			shift = [1, 1];
+			break;
+		case 4:
+			shift = [1, 0];
+			break;
+		case 5:
+			shift = [1, -1];
+			break;
+		case 6:
+			shift = [0, -1];
+			break;
+		case 7:
+			shift = [-1, -1];
+			break;
+	}
+		if (dist((toyX + 0.5 + 0.3 * shift[0]) * boxSize, (toyY + 0.5 + 0.3 * shift[1]) * boxSize, checkX, checkY) < NEW_DIRECTION_MARK_R)
+		{
+			return thisPossibleNewDirections[directionIndex];
+		}
+	}
+	return NOT_CHOSEN;
 }
 
 function onSamePickToy(checkX, checkY)
@@ -416,8 +567,53 @@ function polygon(x, y, radius, npoints)
   endShape(CLOSE);
 }
 
+function xMouseMark()
+{
+	line(mouseX - 5, mouseY, mouseX + 5, mouseY);
+	line(mouseX, mouseY - 5, mouseX, mouseY + 5);
+}
+
+function vMouseMark()
+{
+	line(mouseX, mouseY, mouseX + 10, mouseY - 10);
+	line(mouseX, mouseY, mouseX - 5, mouseY - 5);
+}
+
 function tile(x, y, size, color_r, color_g, color_b) 
 {
 	fill(color_r, color_g, color_b);
 	rect(x * boxSize, y * boxSize, size);
+}
+
+function addDirectionDot(x, y, direction) 
+{
+	let shift = [];
+	switch (direction)
+	{
+		case 0:
+			shift = [-1, 0];
+			break;
+		case 1:
+			shift = [-1, 1];
+			break;
+		case 2:
+			shift = [0, 1];
+			break;
+		case 3:
+			shift = [1, 1];
+			break;
+		case 4:
+			shift = [1, 0];
+			break;
+		case 5:
+			shift = [1, -1];
+			break;
+		case 6:
+			shift = [0, -1];
+			break;
+		case 7:
+			shift = [-1, -1];
+			break;
+	}
+	circle((x + 0.5 + 0.3 * shift[0]) * boxSize, (y + 0.5 + 0.3 * shift[1]) * boxSize, NEW_DIRECTION_MARK_R);
 }

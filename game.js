@@ -4,14 +4,6 @@ class Game
 	{
 		this.toys = [];
 		this.toys.push(new Toy(0, 0, 1, 1));
-		this.toys[0].add_duration(0);
-		this.toys[0].add_duration(1);
-		this.toys[0].add_duration(2);
-		this.toys[0].add_duration(3);
-		this.toys[0].add_duration(4);
-		this.toys[0].add_duration(5);
-		this.toys[0].add_duration(6);
-		this.toys[0].add_duration(7);
 		this.toys.push(new Toy(1, 0, 1, 2));
 		this.toys.push(new Toy(2, 0, 1, 3));
 		this.toys.push(new Toy(3, 0, 1, 4));
@@ -19,18 +11,9 @@ class Game
 		this.toys.push(new Toy(5, 1, 5, 2));
 		this.toys.push(new Toy(6, 1, 5, 3));
 		this.toys.push(new Toy(7, 1, 5, 4));
-		this.toys[7].add_duration(0);
-		this.toys[7].add_duration(1);
-		this.toys[7].add_duration(2);
-		this.toys[7].add_duration(3);
-		this.toys[7].add_duration(4);
-		this.toys[7].add_duration(5);
-		this.toys[7].add_duration(6);
-		this.toys[7].add_duration(7);
-		this.directionSticks = 24;
 	}
 	
-	possible_next_steps(toy_id)
+	possible_next_steps(toy_id, allow_near_move)
 	{
 		// find the wanted toy
 		let wantedToy = null;
@@ -50,52 +33,47 @@ class Game
 		// PROCESS:
 		let posibleLocations = [];
 		// 1. check what directions are open 
-		for (var directionIndex = 0; directionIndex < wantedToy.directions.length; directionIndex++)
+		if (allow_near_move)
 		{
-			var nextLocation = [];
-			// get next location
-			switch (wantedToy.directions[directionIndex])
+			for (var directionIndex = 0; directionIndex < wantedToy.directions.length; directionIndex++)
 			{
-				case 0:
-					nextLocation = [wantedToy.x - 1, wantedToy.y];
-					break;
-				case 1:
-					nextLocation = [wantedToy.x - 1, wantedToy.y + 1];
-					break;
-				case 2:
-					nextLocation = [wantedToy.x, wantedToy.y + 1];
-					break;
-				case 3:
-					nextLocation = [wantedToy.x + 1, wantedToy.y + 1];
-					break;
-				case 4:
-					nextLocation = [wantedToy.x + 1, wantedToy.y];
-					break;
-				case 5:
-					nextLocation = [wantedToy.x + 1, wantedToy.y - 1];
-					break;
-				case 6:
-					nextLocation = [wantedToy.x, wantedToy.y - 1];
-					break;
-				case 7:
-					nextLocation = [wantedToy.x - 1, wantedToy.y - 1];
-					break;
-			}
-			// check if valid and empty
-			if (nextLocation[0] >= 0 && nextLocation[0] <= BOARD_SIZE && nextLocation[1] >= 0 && nextLocation[1] <= BOARD_SIZE + 1 && this.empty_location(nextLocation[0], nextLocation[1]))
-			{
-				posibleLocations.push(new Move(wantedToy, nextLocation[0], nextLocation[1], []));
+				var nextLocation = [];
+				// get next location
+				switch (wantedToy.directions[directionIndex])
+				{
+					case 0:
+						nextLocation = [wantedToy.x - 1, wantedToy.y];
+						break;
+					case 1:
+						nextLocation = [wantedToy.x - 1, wantedToy.y + 1];
+						break;
+					case 2:
+						nextLocation = [wantedToy.x, wantedToy.y + 1];
+						break;
+					case 3:
+						nextLocation = [wantedToy.x + 1, wantedToy.y + 1];
+						break;
+					case 4:
+						nextLocation = [wantedToy.x + 1, wantedToy.y];
+						break;
+					case 5:
+						nextLocation = [wantedToy.x + 1, wantedToy.y - 1];
+						break;
+					case 6:
+						nextLocation = [wantedToy.x, wantedToy.y - 1];
+						break;
+					case 7:
+						nextLocation = [wantedToy.x - 1, wantedToy.y - 1];
+						break;
+				}
+				// check if valid and empty
+				if (nextLocation[0] >= 0 && nextLocation[0] <= BOARD_SIZE && nextLocation[1] >= 0 && nextLocation[1] <= BOARD_SIZE + 1 && this.empty_location(nextLocation[0], nextLocation[1]))
+				{
+					posibleLocations.push(new Move(wantedToy, nextLocation[0], nextLocation[1], false, []));
+				}
 			}
 		}
 		// 2. check if can jump over other player
-		posibleLocations.push(...this.try_jump_location(wantedToy, [[wantedToy.x, wantedToy.y]], []));
-		
-		return posibleLocations;
-	}
-	
-	try_jump_location(wantedToy, found_positions = [], current_path)
-	{
-		let posibleLocations = [];
 		for (var directionIndex = 0; directionIndex < wantedToy.directions.length; directionIndex++)
 		{
 			var nextLocation = [];
@@ -124,7 +102,7 @@ class Game
 					jumpLocation = [wantedToy.x + 1, wantedToy.y];
 					break;
 				case 5:
-					nextLocation = [wantedToy.x + 2, wantedToy.y - 1];
+					nextLocation = [wantedToy.x + 2, wantedToy.y - 2];
 					jumpLocation = [wantedToy.x + 1, wantedToy.y - 1];
 					break;
 				case 6:
@@ -137,25 +115,11 @@ class Game
 					break;
 			}
 			// check if valid and empty
-			if (nextLocation[0] >= 0 && nextLocation[0] <= BOARD_SIZE && nextLocation[1] >= 0 && nextLocation[1] <= BOARD_SIZE + 1 && this.empty_location(nextLocation[0], nextLocation[1]) && !this.empty_location(jumpLocation[0], jumpLocation[1]) && !locationInSet(found_positions, nextLocation))
+			if (nextLocation[0] >= 0 && nextLocation[0] <= BOARD_SIZE && nextLocation[1] >= 0 && nextLocation[1] <= BOARD_SIZE + 1 && this.empty_location(nextLocation[0], nextLocation[1]) && !this.empty_location(jumpLocation[0], jumpLocation[1]))
 			{
-				let jump_over_toy = this.toy_in_location(jumpLocation[0], nextLocation[1]);
-				if (!current_path.includes(jump_over_toy))
-				{
-					current_path.push(jump_over_toy);
-					posibleLocations.push(new Move(wantedToy, nextLocation[0], nextLocation[1], current_path));
-					found_positions.push(nextLocation);
-					let tempToy = wantedToy.copy();
-					tempToy.x = nextLocation[0];
-					tempToy.y = nextLocation[1];
-					console.log("From location (" + wantedToy.x + ", " + wantedToy.y + ") to location (" + nextLocation[0] + ", " + nextLocation[1] + "), which is order " + current_path.length + ", over = " + JSON.stringify(current_path));
-					if (current_path.length < 2)
-					{
-						posibleLocations.push(...this.try_jump_location(tempToy, found_positions, [...current_path]));	
-					}
-				}
+				posibleLocations.push(new Move(wantedToy, nextLocation[0], nextLocation[1], true, this.toy_in_location(jumpLocation[0], nextLocation[1])));
 			}
-		}
+		}	
 		return posibleLocations;
 	}
 	
@@ -196,23 +160,11 @@ class Game
 	
 	kill_list_from_jump(jump_move)
 	{
-		if (jump_move.jump_over_list.length > 0)
+		for (var toy_index = this.toys.length - 1; toy_index >= 0; toy_index--)
 		{
-			let kill_list = [];
-			// get the color of this toy
-			let ourColor = jump_move.toy.color;
-			// find game indexes to kill
-			for (var toy_index = this.toys.length - 1; toy_index >= 0; toy_index--)
+			if (jump_move.jump_over == this.toys[toy_index].id && this.toys[toy_index].color != jump_move.toy.color)
 			{
-				if (jump_move.jump_over_list.includes(this.toys[toy_index].id) && this.toys[toy_index].color != ourColor)
-				{
-					kill_list.push(toy_index);
-				}
-			}
-			// kill them 
-			for (var killIndex = 0; killIndex < kill_list.length; killIndex++)
-			{
-				this.toys.splice(kill_list[killIndex], 1);
+				this.toys.splice(toy_index, 1);
 			}
 		}
 	}
@@ -254,12 +206,13 @@ class Game
 
 class Move
 {
-	constructor(toy, new_x, new_y, jump_over_list)
+	constructor(toy, new_x, new_y, is_jump, jump_over)
 	{
 		this.toy = toy;
 		this.new_x = new_x;
 		this.new_y = new_y;
-		this.jump_over_list = jump_over_list;
+		this.is_jump = is_jump;
+		this.jump_over = jump_over;
 	}
 }
 
@@ -290,6 +243,19 @@ class Toy
 			}
 		}
 		return false;
+	}
+	
+	get_open_directions()
+	{
+		var answer = [];
+		for (var i = 0; i < 8; i++)
+		{
+			if (!this.directions.includes(i))
+			{
+				answer.push(i);
+			}
+		}
+		return answer;
 	}
 	
 	add_duration(new_duration)
@@ -345,16 +311,4 @@ class Toy
 				break;
 		}
 	}
-}
-
-function locationInSet(locationSet, newLocation)
-{
-	for (var locationIndex = 0; locationIndex < locationSet.length; locationIndex++)
-	{
-		if (locationSet[locationIndex][0] == newLocation[0] && locationSet[locationIndex][1] == newLocation[1])
-		{
-			return true;
-		}
-	}
-	return false;
 }
