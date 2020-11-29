@@ -9,6 +9,7 @@ let GAME_HEIGHT = 600;
 let GAME_WIDTH = GAME_HEIGHT * 7 / 6;
 let NOT_CHOSEN = -1;
 let NEW_DIRECTION_MARK_R = 10;
+let ACTION_TABLE_ID = "actions-table";
 
 // global game varable
 let game;
@@ -17,6 +18,7 @@ let is_re_jump_case;
 let player_turn;
 let pickedToy;
 let thisPossibleNextSteps;
+let actionCount;
 
 
 // print vars
@@ -41,7 +43,20 @@ function setup()
 	is_pick_toy_mode = false;
 	is_re_jump_case = false;
 	player_turn = 1;
+	actionCount = 0;
 	pickedToy = NOT_CHOSEN;
+	document.getElementById(ACTION_TABLE_ID).innerHTML = "";
+}
+
+function new_game()
+{
+	game = new Game();
+	is_pick_toy_mode = false;
+	is_re_jump_case = false;
+	player_turn = 1;
+	actionCount = 0;
+	pickedToy = NOT_CHOSEN;
+	document.getElementById(ACTION_TABLE_ID).innerHTML = "";
 }
 
 /* Called every x seconds */
@@ -73,13 +88,16 @@ function draw()
 			fill(0, 93, 80);
 			stroke(0, 93, 80);
 		}
+		actionRowHTML("Player " + player_turn + " win the Game");
 		text("player " + playerWin + " win!", GAME_WIDTH / 2, GAME_HEIGHT / 2);
 		noLoop();
 		setTimeout(function (){
 			game = new Game();
 			is_pick_toy_mode = false;
 			player_turn = 1;
+			actionCount = 0;
 			pickedToy = NOT_CHOSEN;
+			document.getElementById(ACTION_TABLE_ID).innerHTML = "";
 			loop();
 		}, 2000);
 	}
@@ -243,22 +261,22 @@ function drawToys()
 					line((game.toys[toyIndex].x + 0.5) * boxSize - boxSize * 0.33, (game.toys[toyIndex].y + 0.5) * boxSize, (game.toys[toyIndex].x + 0.5) * boxSize - boxSize * 0.33 - 10, (game.toys[toyIndex].y + 0.5) * boxSize);
 					break;
 				case 1:
-					line((game.toys[toyIndex].x + 0.5) * boxSize + boxSize * 0.25, (game.toys[toyIndex].y + 0.5) * boxSize - boxSize * 0.25, (game.toys[toyIndex].x + 0.5) * boxSize + boxSize * 0.25 + 7, (game.toys[toyIndex].y + 0.5) * boxSize- boxSize * 0.25 - 7);
-					break;
-				case 2:
-					line((game.toys[toyIndex].x + 0.5) * boxSize + boxSize * 0.25, (game.toys[toyIndex].y + 0.5) * boxSize + boxSize * 0.25, (game.toys[toyIndex].x + 0.5) * boxSize + boxSize * 0.25 + 7, (game.toys[toyIndex].y + 0.5) * boxSize + boxSize * 0.25 + 7);
-					break;
-				case 3:
 					line((game.toys[toyIndex].x + 0.5) * boxSize - boxSize * 0.25, (game.toys[toyIndex].y + 0.5) * boxSize + boxSize * 0.25, (game.toys[toyIndex].x + 0.5) * boxSize - boxSize * 0.25 - 7, (game.toys[toyIndex].y + 0.5) * boxSize + boxSize * 0.25 + 7);
 					break;
-				case 4:
-					line((game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize - boxSize * 0.33, (game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize- boxSize * 0.33 - 10);
-					break;
-				case 5:
+				case 2:
 					line((game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize + boxSize * 0.33, (game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize + boxSize * 0.33 + 10);
 					break;
-				case 6:
+				case 3:
+					line((game.toys[toyIndex].x + 0.5) * boxSize + boxSize * 0.25, (game.toys[toyIndex].y + 0.5) * boxSize + boxSize * 0.25, (game.toys[toyIndex].x + 0.5) * boxSize + boxSize * 0.25 + 7, (game.toys[toyIndex].y + 0.5) * boxSize + boxSize * 0.25 + 7);
+					break;
+				case 4:
 					line((game.toys[toyIndex].x + 0.5) * boxSize + boxSize * 0.33, (game.toys[toyIndex].y + 0.5) * boxSize, (game.toys[toyIndex].x + 0.5) * boxSize + boxSize * 0.33 + 10, (game.toys[toyIndex].y + 0.5) * boxSize);
+					break;
+				case 5:
+					line((game.toys[toyIndex].x + 0.5) * boxSize + boxSize * 0.25, (game.toys[toyIndex].y + 0.5) * boxSize - boxSize * 0.25, (game.toys[toyIndex].x + 0.5) * boxSize + boxSize * 0.25 + 7, (game.toys[toyIndex].y + 0.5) * boxSize- boxSize * 0.25 - 7);
+					break;
+				case 6:
+					line((game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize - boxSize * 0.33, (game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize- boxSize * 0.33 - 10);
 					break;
 				case 7:
 					line((game.toys[toyIndex].x + 0.5) * boxSize - boxSize * 0.25, (game.toys[toyIndex].y + 0.5) * boxSize - boxSize * 0.25, (game.toys[toyIndex].x + 0.5) * boxSize - boxSize * 0.25 - 7, (game.toys[toyIndex].y + 0.5) * boxSize- boxSize * 0.25 - 7);
@@ -384,6 +402,7 @@ function mouseClicked()
 		if (nextDirection != NOT_CHOSEN)
 		{
 			pickedToy.add_duration(nextDirection);
+			actionRowHTML("Add direction " + nextDirection + " to toy " + pickedToy.id);
 			swithPlayer();
 		}
 		else if(onSamePickToy(nowMouseX, nowMouseY))
@@ -394,10 +413,12 @@ function mouseClicked()
 		var nextLocationCheck = NextToNextStep(nowMouseX, nowMouseY);
 		if (nextLocationCheck != NOT_CHOSEN)
 		{
+			actionRowHTML("Move toy " + pickedToy.id + " from (" + pickedToy.x + ", " + pickedToy.y + ") to (" + thisPossibleNextSteps[nextLocationCheck].new_x + ", " + thisPossibleNextSteps[nextLocationCheck].new_y + ")");
 			pickedToy.jump(thisPossibleNextSteps[nextLocationCheck].new_x, thisPossibleNextSteps[nextLocationCheck].new_y);
 			if (thisPossibleNextSteps[nextLocationCheck].is_jump)
 			{
 				game.kill_list_from_jump(thisPossibleNextSteps[nextLocationCheck]);	
+				actionRowHTML("Toy " + pickedToy.id + " kill toy " + thisPossibleNextSteps[nextLocationCheck].id);
 				thisPossibleNextSteps = game.possible_next_steps(pickedToy.id, false);
 				if (thisPossibleNextSteps.length > 0)
 				{
@@ -424,10 +445,12 @@ function mouseClicked()
 		var nextLocationCheck = NextToNextStep(nowMouseX, nowMouseY);
 		if (nextLocationCheck != NOT_CHOSEN)
 		{
+			actionRowHTML("Move toy " + pickedToy.id + " from (" + pickedToy.x + ", " + pickedToy.y + ") to (" + thisPossibleNextSteps[nextLocationCheck].new_x + ", " + thisPossibleNextSteps[nextLocationCheck].new_y + ")");
 			pickedToy.jump(thisPossibleNextSteps[nextLocationCheck].new_x, thisPossibleNextSteps[nextLocationCheck].new_y);
 			if (thisPossibleNextSteps[nextLocationCheck].is_jump)
 			{
 				game.kill_list_from_jump(thisPossibleNextSteps[nextLocationCheck]);	
+				actionRowHTML("Toy " + pickedToy.id + " kill toy " + thisPossibleNextSteps[nextLocationCheck].id);
 				thisPossibleNextSteps = game.possible_next_steps(pickedToy.id, false);
 				if (thisPossibleNextSteps.length > 0)
 				{
@@ -616,4 +639,10 @@ function addDirectionDot(x, y, direction)
 			break;
 	}
 	circle((x + 0.5 + 0.3 * shift[0]) * boxSize, (y + 0.5 + 0.3 * shift[1]) * boxSize, NEW_DIRECTION_MARK_R);
+}
+
+function actionRowHTML(description)
+{
+	actionCount++;
+	document.getElementById(ACTION_TABLE_ID).innerHTML = '<tr><th scope="row">' + actionCount + '</th><th scope="row">' + player_turn + '</th><th scope="row">' + description + '</th></tr>' + document.getElementById(ACTION_TABLE_ID).innerHTML;
 }

@@ -117,7 +117,7 @@ class Game
 			// check if valid and empty
 			if (nextLocation[0] >= 0 && nextLocation[0] <= BOARD_SIZE && nextLocation[1] >= 0 && nextLocation[1] <= BOARD_SIZE + 1 && this.empty_location(nextLocation[0], nextLocation[1]) && !this.empty_location(jumpLocation[0], jumpLocation[1]))
 			{
-				posibleLocations.push(new Move(wantedToy, nextLocation[0], nextLocation[1], true, this.toy_in_location(jumpLocation[0], nextLocation[1])));
+				posibleLocations.push(new Move(wantedToy, nextLocation[0], nextLocation[1], true, this.toy_in_location(jumpLocation[0], jumpLocation[1])));
 			}
 		}	
 		return posibleLocations;
@@ -160,11 +160,12 @@ class Game
 	
 	kill_list_from_jump(jump_move)
 	{
-		for (var toy_index = this.toys.length - 1; toy_index >= 0; toy_index--)
+		for (var toy_index = 0; toy_index < this.toys.length; toy_index++)
 		{
 			if (jump_move.jump_over == this.toys[toy_index].id && this.toys[toy_index].color != jump_move.toy.color)
 			{
 				this.toys.splice(toy_index, 1);
+				break;
 			}
 		}
 	}
