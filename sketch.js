@@ -90,13 +90,13 @@ function draw()
 	let playerWin = is_win();
 	if (playerWin != NOT_CHOSEN)
 	{
-		win_senario();
+		win_senario(playerWin);
 	}
 }
 
 
 /* the logic of what happens when a player wins */
-function win_senario()
+function win_senario(playerWin)
 {
 	textSize(32);
 	// the color of the player used for the text
