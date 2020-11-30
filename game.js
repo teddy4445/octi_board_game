@@ -1,8 +1,10 @@
+/* game has list of toys and some logic on how they can move */
 class Game
 {
 	constructor()
 	{
 		this.toys = [];
+		// this is static because the game always starts in the same way 
 		this.toys.push(new Toy(0, 0, 1, 1));
 		this.toys.push(new Toy(1, 0, 1, 2));
 		this.toys.push(new Toy(2, 0, 1, 3));
@@ -30,7 +32,6 @@ class Game
 		{
 			throw new Execption("toy not found");
 		}
-		// PROCESS:
 		let posibleLocations = [];
 		// 1. check what directions are open 
 		if (allow_near_move)
@@ -205,19 +206,7 @@ class Game
 	}
 }
 
-class Move
-{
-	constructor(toy, new_x, new_y, is_jump, jump_over)
-	{
-		this.toy = toy;
-		this.new_x = new_x;
-		this.new_y = new_y;
-		this.is_jump = is_jump;
-		this.jump_over = jump_over;
-	}
-}
-
-
+/* toy has location, belongs to a player by it's color, has ID to be indentified and directions it can move upon */
 class Toy
 {
 	constructor(id, color, x, y, directions = [])
@@ -311,5 +300,18 @@ class Toy
 				self.y -= 1;
 				break;
 		}
+	}
+}
+
+/* DS to store the meta-data needed for calculate different types of move (near and jump) */
+class Move
+{
+	constructor(toy, new_x, new_y, is_jump, jump_over)
+	{
+		this.toy = toy;
+		this.new_x = new_x;
+		this.new_y = new_y;
+		this.is_jump = is_jump;
+		this.jump_over = jump_over;
 	}
 }

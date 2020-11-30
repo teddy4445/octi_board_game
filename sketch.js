@@ -1,28 +1,31 @@
-/* global varibales */
-let BOARD_SIZE = 6;
-let TOYS_PER_PLAYER = 4;
-let PLAYER_ONE_BASE = [[1, 1], [1, 2], [1, 3], [1, 4]];
-let PLAYER_TWO_BASE = [[5, 1], [5, 2], [5, 3], [5, 4]];
-let GAME_STATES = ["START", "InGame", "WIN"];
-let game_state = GAME_STATES[0];
+/* CONSTS */
+let BOARD_SIZE = 6; // board height, width is always + 1
+let PLAYER_ONE_BASE = [[1, 1], [1, 2], [1, 3], [1, 4]]; // the base locations in the board of player 1
+let PLAYER_TWO_BASE = [[5, 1], [5, 2], [5, 3], [5, 4]]; // the base locations in the board of player 2
+let NOT_CHOSEN = -1; // used multiple times for all cases where some element not found in a search
+/* end - CONSTS */
+
+/* changeable consts */
 let GAME_HEIGHT = 600;
 let GAME_WIDTH = GAME_HEIGHT * 7 / 6;
-let NOT_CHOSEN = -1;
-let NEW_DIRECTION_MARK_R = 10;
+let NEW_DIRECTION_MARK_R = 10; // the raduis from the center of the toy we print the new directions mark
 let ACTION_TABLE_ID = "actions-table";
+let AI_BTN_ID = "ai-btn";
+/* end - changeable consts  */
 
-// global game varable
-let game;
-let is_pick_toy_mode;
-let is_re_jump_case;
-let player_turn;
-let pickedToy;
-let thisPossibleNextSteps;
-let actionCount;
+/* global varibales */
+let game; // the game - toys with meta data
+let aiPlayer; // the ai player
+let is_pick_toy_mode; // status flag
+let is_re_jump_case; // status flag
+let player_turn; // 1 or 2 according to player 0 or 1 which now playing
+let pickedToy; // global info between function about what toy is now picked
+let thisPossibleNextSteps; // global info between function about what next steps are possible (so we calculate them once)
+let actionCount; // counter of the number of actions for the action table 
 
 
 // print vars
-let boxSize;
+let boxSize; // box size to print 
 
 /* end - global varibales */
 
@@ -30,24 +33,26 @@ let boxSize;
 /* Setup function once called at the start */
 function setup() 
 {
+	// create canvas
 	let canvasGame = createCanvas(GAME_WIDTH, GAME_HEIGHT);
+	// set to the right div
 	canvasGame.parent('game');
+	// do not show cursor - will be replace by the putMouse function
 	noCursor();
+	// just for the winning screen
 	textAlign(CENTER, CENTER);
 	
 	// get static draw sizes
 	boxSize = Math.floor(GAME_HEIGHT / 6) - 1;
 	
 	// create game
-	game = new Game();
-	is_pick_toy_mode = false;
-	is_re_jump_case = false;
-	player_turn = 1;
-	actionCount = 0;
-	pickedToy = NOT_CHOSEN;
-	document.getElementById(ACTION_TABLE_ID).innerHTML = "";
+	new_game();
+	
+	// create player - it stateless so can be init one time on page load
+	aiPlayer = new AiPlayer(); 
 }
 
+/* set the start conditions for a new game */
 function new_game()
 {
 	game = new Game();
@@ -57,56 +62,73 @@ function new_game()
 	actionCount = 0;
 	pickedToy = NOT_CHOSEN;
 	document.getElementById(ACTION_TABLE_ID).innerHTML = "";
+	document.getElementById(AI_BTN_ID).style.opacity = 0;
 }
 
 /* Called every x seconds */
 function draw() 
 {
+	// draw the board and toys 
 	drawGame();
+	// if status that a player picked a toy, draw the relevent possible actions
 	if (is_pick_toy_mode)
 	{
 		drawPickMode();
 	}
+	// if jumped, show the new relevent possible actions
 	else if (is_re_jump_case)
 	{
 		drawReJumpMode();
 	}
+	// draw lines in the end cause otherwise different elements shadow them
 	drawLines();
+	// put the curser according to the status and locaiton on the screen
 	putMouse();
 	
+	// check if the player won, if someone won, show winning screen
+	// TODO: calc once in the onMouseClick event and keep in flag 
 	let playerWin = is_win();
 	if (playerWin != NOT_CHOSEN)
 	{
-		textSize(32);
-		if (playerWin == 2)
-		{
-			fill(211, 2, 41);
-			stroke(211, 2, 41);
-		}
-		else // if second player win
-		{
-			fill(0, 93, 80);
-			stroke(0, 93, 80);
-		}
-		actionRowHTML("Player " + player_turn + " win the Game");
-		text("player " + playerWin + " win!", GAME_WIDTH / 2, GAME_HEIGHT / 2);
-		noLoop();
-		setTimeout(function (){
-			game = new Game();
-			is_pick_toy_mode = false;
-			player_turn = 1;
-			actionCount = 0;
-			pickedToy = NOT_CHOSEN;
-			document.getElementById(ACTION_TABLE_ID).innerHTML = "";
-			loop();
-		}, 2000);
+		win_senario();
 	}
 }
 
+
+/* the logic of what happens when a player wins */
+function win_senario()
+{
+	textSize(32);
+	// the color of the player used for the text
+	if (playerWin == 2)
+	{
+		fill(211, 2, 41);
+		stroke(211, 2, 41);
+	}
+	else // if second player win
+	{
+		fill(0, 93, 80);
+		stroke(0, 93, 80);
+	}
+	// record move for later use 
+	actionRowHTML("Player " + player_turn + " win the Game");
+	// show wining text
+	text("player " + playerWin + " win!", GAME_WIDTH / 2, GAME_HEIGHT / 2);
+	// stop draw loop for a bit
+	noLoop();
+	// wait a bit for drama and re-start the game
+	setTimeout(function (){
+		new_game();
+		loop();
+	}, 2000);
+}
+
+/* check if one of the player does not hae toys or one of it's toys on the second player's base tiles */
 function is_win()
 {
 	let playerOneToyscounter = 0;
 	let playerTwoToyscounter = 0;
+	// check if a player's toy on second player's base tile
 	for (var toyIndex = 0; toyIndex < game.toys.length; toyIndex++)
 	{
 		if (game.toys[toyIndex].color == 0)
@@ -138,12 +160,14 @@ function is_win()
 	return NOT_CHOSEN;
 }
 
+/* just to make sence of the draw order - DO NOT CHANGE IT! */ 
 function drawGame()
 {
 	drawBoard();
 	drawToys();
 }
 
+/* draw the lines on the border */
 function drawLines()
 {
 	strokeWeight(1);
@@ -166,6 +190,7 @@ function drawLines()
 	line(GAME_WIDTH - 1, 0, GAME_WIDTH - 1, GAME_WIDTH);
 }
 
+/* draw the board as tiles of base after all board in the same color */
 function drawBoard()
 {
 	// draw game board
@@ -182,6 +207,7 @@ function drawBoard()
 	}
 }
 
+/* draw the toys. color set according to player index and directions according to the Toy instance */
 function drawToys()
 {
 	strokeWeight(1);
@@ -286,18 +312,10 @@ function drawToys()
 	}
 }
 
+/* draw the edges we can add to the toy and the possible locations to move to */
 function drawPickMode()
 {
-	fill(color(255, 255, 255, 130));
-	strokeWeight(1);
-	stroke(0, 0, 0);
-	polygon((pickedToy.x + 0.5) * boxSize , (pickedToy.y + 0.5) * boxSize , boxSize * 0.42, 8);
-	
-	// print all possible_next_steps
-	for (var locationIndex = 0; locationIndex < thisPossibleNextSteps.length; locationIndex++)
-	{
-		tile(thisPossibleNextSteps[locationIndex].new_x, thisPossibleNextSteps[locationIndex].new_y, boxSize, 219, 195, 173);
-	}
+	drawReJumpMode();
 	
 	// draw the possible edges we can add 
 	for (var directionIndex = 0; directionIndex < thisPossibleNewDirections.length; directionIndex++)
@@ -308,6 +326,7 @@ function drawPickMode()
 	}
 }
 
+/* draw the possible locations to move to for a picked toy */
 function drawReJumpMode()
 {
 	fill(color(255, 255, 255, 130));
@@ -322,6 +341,7 @@ function drawReJumpMode()
 	}
 }
 
+/* IMPORTANT FUNCTION - put some draw over the mouse's location as curser which change according to the status and location */
 function putMouse()
 {
 	strokeWeight(3);
@@ -384,7 +404,7 @@ function putMouse()
 	}
 }
 
-
+/* IMPORTANT FUNCTION - on click of mouse change the game's status as user's decision interface  */
 function mouseClicked() 
 {
 	var nowMouseX = mouseX;
@@ -485,21 +505,69 @@ function mouseClicked()
 	}
 }
 
+function do_ai_move()
+{
+	try
+	{
+		let ai_move = aiPlayer.do_move(game);
+		switch (ai_move.type)
+		{
+			case AI_MOVE_ADD_DIRECTION:
+				// find the right toy and add the new direction
+				for (var toyIndex = 0; toyIndex < game.toys.length; toyIndex++)
+				{
+					if (game.toys[toyIndex].id == ai_move.pickedToyId)
+					{
+						game.toys[toyIndex].add_duration(ai_move.newDirection);
+					}
+				}
+				break;
+			case AI_MOVE_JUMP:
+				let aiPickedToy;
+				// find and move the right toy
+				for (var toyIndex = 0; toyIndex < game.toys.length; toyIndex++)
+				{
+					if (game.toys[toyIndex].id == ai_move.pickedToyId)
+					{
+						game.toys[toyIndex].x = ai_move.newLocation[0];
+						game.toys[toyIndex].y = ai_move.newLocation[1];
+						aiPickedToy = game.toys[toyIndex];
+					}
+				}
+				// kill the toys we jump over
+				for (var killToyIndex = 0; killToyIndex < ai_move.killList.length; killToyIndex++)
+				{
+					game.kill_list_from_jump(new Move(aiPickedToy, NOT_CHOSEN, NOT_CHOSEN, true, ai_move.killList[killToyIndex]));
+				}
+				break;
+		}
+	}
+	catch (error)
+	{
+		alert("AI currently not working - should work really soon");
+	}
+	return false;
+}
+
+/* switch between the first and second player and vise versa */
 function swithPlayer()
 {
 	if (player_turn == 1)
 	{
 		player_turn = 2;
+		document.getElementById(AI_BTN_ID).style.opacity = 1;
 	}
 	else
 	{
 		player_turn = 1;
+		document.getElementById(AI_BTN_ID).style.opacity = 0;
 	}
 	is_pick_toy_mode = false;
 	is_re_jump_case = false;
 	pickedToy = NOT_CHOSEN;	
 }
 
+/* checkc if the mouse on\clicked close to a toy */
 function clickNextToPickToy(checkX, checkY)
 {
 	for (var toyIndex = 0; toyIndex < game.toys.length; toyIndex++)
@@ -512,6 +580,7 @@ function clickNextToPickToy(checkX, checkY)
 	return NOT_CHOSEN;
 }
 
+/* checkc if the mouse on\clicked close to a next possible tile to move to */
 function NextToNextStep(checkX, checkY)
 {	
 	for (var nextLocationIndex = 0; nextLocationIndex < thisPossibleNextSteps.length; nextLocationIndex++)
@@ -524,6 +593,7 @@ function NextToNextStep(checkX, checkY)
 	return NOT_CHOSEN;
 }
 
+/* checkc if the mouse on\clicked close to a a direction we wish to add */
 function NextToAddDirection(toyX, toyY, checkX, checkY)
 {	
 	for (var directionIndex = 0; directionIndex < thisPossibleNewDirections.length; directionIndex++)
@@ -564,18 +634,21 @@ function NextToAddDirection(toyX, toyY, checkX, checkY)
 	return NOT_CHOSEN;
 }
 
+/* checkc if the mouse on\clicked close to the picked toy */
 function onSamePickToy(checkX, checkY)
 {
 	return dist(checkX, checkY, (pickedToy.x + 0.5) * boxSize, (pickedToy.y + 0.5) * boxSize) < boxSize * 0.33;
 }
 
-/* Eventhandler function provided by p5 */
+/* Eventhandler function provided by p5 to change the game size if the window in resized */
+// TODO: make it work 
 function windowResized() 
 {
 	resizeCanvas(GAME_WIDTH, GAME_HEIGHT);
 	boxSize = Math.floor(GAME_HEIGHT / 6) - 1;
 }
 
+/* draw a polygon... used mostly to draw the toys */
 function polygon(x, y, radius, npoints) 
 {
   let angle = TWO_PI / npoints;
@@ -590,24 +663,28 @@ function polygon(x, y, radius, npoints)
   endShape(CLOSE);
 }
 
+/* draw a mouse X curser */
 function xMouseMark()
 {
 	line(mouseX - 5, mouseY, mouseX + 5, mouseY);
 	line(mouseX, mouseY - 5, mouseX, mouseY + 5);
 }
 
+/* draw a mouse V curser */
 function vMouseMark()
 {
 	line(mouseX, mouseY, mouseX + 10, mouseY - 10);
 	line(mouseX, mouseY, mouseX - 5, mouseY - 5);
 }
 
+/* draw a game tile in the right color */
 function tile(x, y, size, color_r, color_g, color_b) 
 {
 	fill(color_r, color_g, color_b);
 	rect(x * boxSize, y * boxSize, size);
 }
 
+/* draw a new direction dot according to the direction */
 function addDirectionDot(x, y, direction) 
 {
 	let shift = [];
@@ -641,6 +718,7 @@ function addDirectionDot(x, y, direction)
 	circle((x + 0.5 + 0.3 * shift[0]) * boxSize, (y + 0.5 + 0.3 * shift[1]) * boxSize, NEW_DIRECTION_MARK_R);
 }
 
+/* add a raw to the action table in the main page */
 function actionRowHTML(description)
 {
 	actionCount++;
