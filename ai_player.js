@@ -1,6 +1,6 @@
 // consts //
 let LARGEST_SCORE = 999;
-let POSSIBLE_KILL_PANISHMENT = 10;
+let POSSIBLE_KILL_PANISHMENT = 100;
 // end - consts //
 
 /* the naive, greedy algorithm */
@@ -25,6 +25,39 @@ class AiPlayer
 			if (allPossbileMoves[moveIndex].score == bestScore)
 			{
 				bestMoves.push(allPossbileMoves[moveIndex]);
+			}
+		}
+		// 4. pick one in random
+		return bestMoves[Math.floor(Math.random() * bestMoves.length)];
+	}
+	
+	// decide where is the next place to jump to
+	do_continue_jump_move(toyId, possibleMoves)
+	{
+		// convert to the object we need
+		var aiPossibleMoves = [];
+		for (var moveIndex = 0; moveIndex < possibleMoves.length; moveIndex++)
+		{
+			aiPossibleMoves.push(possibleMoves[moveIndex].convert_to_ai_move());
+		}
+		// score each move
+		var bestScore = -999; // -inf just to be replaced 
+		for (var actionIndex = 0; actionIndex < aiPossibleMoves.length; actionIndex++)
+		{
+			var score = this.move_score(game, aiPossibleMoves[actionIndex]);
+			aiPossibleMoves[actionIndex].score = score;
+			if (score > bestScore)
+			{
+				bestScore = score;
+			}
+		}
+		// pick the best one
+		var bestMoves = [];
+		for (var moveIndex = 0; moveIndex < aiPossibleMoves.length; moveIndex++)
+		{
+			if (aiPossibleMoves[moveIndex].score == bestScore)
+			{
+				bestMoves.push(aiPossibleMoves[moveIndex]);
 			}
 		}
 		// 4. pick one in random
@@ -93,7 +126,7 @@ class AiPlayer
 				break;
 		}
 		var newLineDistance = minDistanceFromBase((this.player_color + 1) % 2, currentToyLocation[0], currentToyLocation[1]);
-		return baseLineDistance - newLineDistance;
+		return baseLineDistance - 1.5 * newLineDistance;
 	}
 	
 	move_score(game, action)
@@ -105,17 +138,27 @@ class AiPlayer
 		// if by doing this move, we win - do it
 		if (afterMoveDistance == 0)
 		{
+			console.log("Toy #" + action.pickedToyId + " has winning move to: (" + action.newLocation[0] + ", " + action.newLocation[1] + ")");
 			return LARGEST_SCORE;
 		}
-		else if (action.killList.length > 0) // if we kill someone, we would like to do it
+		else if (action.killList.length > 0 && action.killList[0] != NOT_CHOSEN) // if we kill someone, we would like to do it
 		{
-			return Math.floor(LARGEST_SCORE / (4 - game.count_player_toys((this.player_color + 1) % 2)));
+			console.log("Toy #" + action.pickedToyId + " has killing move to: (" + action.newLocation[0] + ", " + action.newLocation[1] + ") over toy #" + action.killList[0]);
+			return Math.floor(LARGEST_SCORE / (5 - game.count_player_toys((this.player_color + 1) % 2)));
 		}
-		if (game.possible_kill((this.player_color + 1) % 2, action.newLocation[0], action.newLocation[1])) // if we will be eaten next move we do not want it but in general move torwards the second player's base
+		
+		// shadow this toy so it won't mess with the analysis
+		game.add_shadow_toy(action.pickedToyId);
+		// check if can be killed in this move
+		var canBeEaten = game.possible_kill((this.player_color + 1) % 2, action.newLocation[0], action.newLocation[1]);
+		// release the toy back
+		game.release_shadow_toy(action.pickedToyId);
+		
+		if (canBeEaten) // if we will be eaten next move we do not want it but in general move torwards the second player's base
 		{
 			isKillPossible = 1;
 		}
-		return baseDistance - afterMoveDistance - POSSIBLE_KILL_PANISHMENT * isKillPossible;
+		return baseDistance - 1.5 * afterMoveDistance - POSSIBLE_KILL_PANISHMENT * isKillPossible;
 	}
 }
 
@@ -130,6 +173,12 @@ class AiPlayerMinMax
 	{
 		return null;
 	}
+	
+	// decide where is the next place to jump to
+	do_continue_jump_move(toyId, possibleMoves)
+	{
+		return possibleMoves[0];
+	}
 }
 
 class AiPlayerDeepQLearning
@@ -142,5 +191,11 @@ class AiPlayerDeepQLearning
 	do_move(game)
 	{
 		return null;
+	}
+	
+	// decide where is the next place to jump to
+	do_continue_jump_move(toyId, possibleMoves)
+	{
+		return possibleMoves[0];
 	}
 }

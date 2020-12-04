@@ -549,6 +549,7 @@ function do_ai_move()
 				{
 					if (game.toys[toyIndex].id == ai_move.pickedToyId)
 					{
+						actionRowHTML("Add direction " + ai_move.newDirection + " to toy " + ai_move.pickedToyId);
 						game.toys[toyIndex].add_duration(ai_move.newDirection);
 						break;
 					}
@@ -561,6 +562,7 @@ function do_ai_move()
 				{
 					if (game.toys[toyIndex].id == ai_move.pickedToyId)
 					{
+						actionRowHTML("Move toy " + ai_move.pickedToyId + " from (" + game.toys[toyIndex].x + ", " + game.toys[toyIndex].y + ") to (" + ai_move.newLocation[0] + ", " + ai_move.newLocation[0] + ")");
 						game.toys[toyIndex].x = ai_move.newLocation[0];
 						game.toys[toyIndex].y = ai_move.newLocation[1];
 						aiPickedToy = game.toys[toyIndex];
@@ -570,9 +572,21 @@ function do_ai_move()
 				// kill the toys we jump over
 				for (var killToyIndex = 0; killToyIndex < ai_move.killList.length; killToyIndex++)
 				{
-					game.kill_list_from_jump(new Move(aiPickedToy, NOT_CHOSEN, NOT_CHOSEN, true, ai_move.killList[killToyIndex]));
+					if (ai_move.killList[killToyIndex] != NOT_CHOSEN)
+					{
+						actionRowHTML("Toy " + ai_move.pickedToyId + " kill toy " + ai_move.killList[killToyIndex]);
+						game.kill_list_from_jump(new Move(aiPickedToy, NOT_CHOSEN, NOT_CHOSEN, true, ai_move.killList[killToyIndex]));	
+					}
 				}
-				break;
+				// check if we can do next jump steps
+				if (ai_move.killList.length > 0 && ai_move.killList[0] != NOT_CHOSEN)
+				{
+					thisPossibleNextSteps = game.possible_next_steps(ai_move.pickedToyId, false);
+					if (thisPossibleNextSteps.length > 0)
+					{
+						do_ai_jump_move(ai_move.pickedToyId);
+					}	
+				}
 		}
 		swithPlayer();
 	}
@@ -581,6 +595,45 @@ function do_ai_move()
 		alert("AI currently not working... please make its move. The error recorded is: " + error);
 	}
 	return false;
+}
+
+/* allow AI to do multiple jumps if possible in the same turn */
+function do_ai_jump_move(toyId)
+{
+	var ai_move = aiPlayer.do_continue_jump_move(toyId, thisPossibleNextSteps);
+	for (var toyIndex = 0; toyIndex < game.toys.length; toyIndex++)
+	{
+		if (game.toys[toyIndex].id == ai_move.pickedToyId)
+		{
+			actionRowHTML("Move toy " + ai_move.pickedToyId + " from (" + game.toys[toyIndex].x + ", " + game.toys[toyIndex].y + ") to (" + ai_move.newLocation[0] + ", " + ai_move.newLocation[0] + ")");
+			game.toys[toyIndex].x = ai_move.newLocation[0];
+			game.toys[toyIndex].y = ai_move.newLocation[1];
+			aiPickedToy = game.toys[toyIndex];
+			break;
+		}
+	}
+	// kill the toys we jump over
+	for (var killToyIndex = 0; killToyIndex < ai_move.killList.length; killToyIndex++)
+	{
+		if (ai_move.killList[killToyIndex] != NOT_CHOSEN)
+		{
+			actionRowHTML("Toy " + ai_move.pickedToyId + " kill toy " + ai_move.killList[killToyIndex]);
+			game.kill_list_from_jump(new Move(aiPickedToy, NOT_CHOSEN, NOT_CHOSEN, true, ai_move.killList[killToyIndex]));	
+		}
+	}
+	try
+	{	
+		// check if we can do next jump steps
+		thisPossibleNextSteps = game.possible_next_steps(pickedToy.id, false);
+		if (thisPossibleNextSteps.length > 0)
+		{
+			do_ai_jump_move(ai_move.pickedToyId);
+		}	
+	}
+	catch (error)
+	{
+		console.log("Multiple jump of AI error as: " + error);
+	}
 }
 
 /* switch between the first and second player and vise versa */

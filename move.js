@@ -9,4 +9,10 @@ class Move
 		this.is_jump = is_jump;
 		this.jump_over = jump_over;
 	}
+	
+	convert_to_ai_move()
+	{
+		
+		return new AiMove(AI_MOVE_JUMP, this.toy.id, NOT_CHOSEN, [this.new_x, this.new_y], [this.jump_over], 0);
+	}
 }

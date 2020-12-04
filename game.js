@@ -3,6 +3,7 @@ class Game
 {
 	constructor()
 	{
+		this.shadow_toys = [];
 		this.toys = [];
 		// this is static because the game always starts in the same way 
 		this.toys.push(new Toy(0, 0, 1, 1));
@@ -13,6 +14,32 @@ class Game
 		this.toys.push(new Toy(5, 1, 5, 2));
 		this.toys.push(new Toy(6, 1, 5, 3));
 		this.toys.push(new Toy(7, 1, 5, 4));
+	}
+	
+	add_shadow_toy(toyId)
+	{
+		for (var toy_index = 0; toy_index < this.toys.length; toy_index++)
+		{
+			if (this.toys[toy_index].id == toyId)
+			{
+				this.shadow_toys.push(this.toys[toy_index]);
+				this.toys.splice(toy_index, 1);
+				break;
+			}
+		}
+	}
+	
+	release_shadow_toy(toyId)
+	{
+		for (var toy_index = 0; toy_index < this.shadow_toys.length; toy_index++)
+		{
+			if (this.shadow_toys[toy_index].id == toyId)
+			{
+				this.toys.push(this.shadow_toys[toy_index]);
+				this.shadow_toys.splice(toy_index, 1);
+				break;
+			}
+		}
 	}
 	
 	all_players_possible_moves(player_color = 1)
@@ -37,7 +64,7 @@ class Game
 														this.toys[toy_index].id, 
 														NOT_CHOSEN,
 														[possibleMoves[moveIndex].new_x, possibleMoves[moveIndex].new_y],
-														possibleMoves[moveIndex].jump_over));
+														[possibleMoves[moveIndex].jump_over]));
 				}
 			}
 		}
@@ -99,7 +126,7 @@ class Game
 				// check if valid and empty
 				if (nextLocation[0] >= 0 && nextLocation[0] <= BOARD_SIZE && nextLocation[1] >= 0 && nextLocation[1] <= BOARD_SIZE + 1 && this.empty_location(nextLocation[0], nextLocation[1]))
 				{
-					posibleLocations.push(new Move(wantedToy, nextLocation[0], nextLocation[1], false, []));
+					posibleLocations.push(new Move(wantedToy, nextLocation[0], nextLocation[1], false, NOT_CHOSEN));
 				}
 			}
 		}
@@ -211,8 +238,9 @@ class Game
 					var thisToyPossibleMoves = this.possible_next_steps(this.toys[toy_index].id, false);
 					for (var moveIndex = 0; moveIndex < thisToyPossibleMoves.length; moveIndex++)
 					{
-						if (thisToyPossibleMoves[moveIndex].killList[0] == killListItem)
+						if (thisToyPossibleMoves[moveIndex].jump_over == killListItem)
 						{
+							console.log("Toy at (" + locX + ", " + locY + ") can be killed by toy #" + this.toys[toy_index].id);
 							possibleKill = true;
 							foundKiller = true;
 							break;
