@@ -11,6 +11,7 @@ let GAME_WIDTH = GAME_HEIGHT * 7 / 6;
 let NEW_DIRECTION_MARK_R = 10; // the raduis from the center of the toy we print the new directions mark
 let ACTION_TABLE_ID = "actions-table";
 let GAME_PLACE = "game-container";
+let TABLE_PLACE = "table-container";
 let START_PLACE = "form-container";
 /* end - changeable consts  */
 
@@ -54,6 +55,7 @@ function set_second_player(type)
 	}
 	// show game
 	document.getElementById(GAME_PLACE).style.display = "";
+	document.getElementById(TABLE_PLACE).style.display = "";
 	document.getElementById(START_PLACE).style.display = "none";
 	// start game
 	loop();
@@ -61,6 +63,19 @@ function set_second_player(type)
 	return false;
 }
 
+function show_your_ai_panel()
+{
+	document.getElementById("user_buttons_panel").style.display = "none";
+	document.getElementById("user_code_form").style.display = "";
+	return false;
+}
+
+function close_your_ai_panel()
+{
+	document.getElementById("user_buttons_panel").style.display = "";
+	document.getElementById("user_code_form").style.display = "none";
+	return false;
+}
 
 /* Setup function once called at the start */
 function setup() 

@@ -31,7 +31,7 @@
       <div class="collapse navbar-collapse" id="navbarResponsive">
         <ul class="navbar-nav ml-auto">
           <li class="nav-item">
-            <a class="nav-link" onclick="return new_game();">New Game</a>
+            <a class="nav-link" onclick="window.location.reload();">New Game</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" target="_blank" href="https://tesera.ru/images/items/34098/octi_rules_eng.pdf">rules</a>
@@ -45,8 +45,8 @@
   <div class="container">
     <div class="row"  id="form-container">
       <div class="col-lg-12 text-center">
-		<form>
-			<button class="btn btn-primary btn-block action-table btn-big-font" onclick="return set_second_player('human');">Play other human</button>
+		<form id="user_buttons_panel">
+			<button class="btn btn-primary btn-block action-table btn-big-font" onclick="return set_second_player('human');">Play with another human</button>
 			<button class="btn btn-success btn-block action-table btn-big-font" onclick="return set_second_player('easy');">Play with easy AI</button>
 			<!--
 			<button class="btn btn-warning btn-block action-table btn-big-font" onclick="return set_second_player('meduim');">Play with meduim AI</button>
@@ -54,6 +54,31 @@
 			-->
 			<button class="btn btn-warning btn-block action-table btn-big-font" onclick="alert('Still in work');">Play with meduim AI</button>
 			<button class="btn btn-danger btn-block action-table btn-big-font" onclick="alert('Still in work');">Play with hard AI</button>
+			
+			
+			<button style="margin-top: 50px;"class="btn btn-info btn-block action-table btn-big-font" onclick="return show_your_ai_panel();">Try your AI</button>
+		</form>
+		<form id="user_code_form" style="display: none; text-align:left;">
+			<button style="margin-bottom: 20px; margin-top: 20px;"class="btn btn-info" onclick="return close_your_ai_panel();">Back</button>
+			<h2>Your code</h2>
+			<p>Check out the full documentation of the project <a href="#">here</a> to know how to write your AI player</p>
+			<div class="form-group">
+				<label for="exampleFormControlTextarea1">Your do_move function</label>
+				<input class="form-control" type="text" disabled value="do_move(game, allPossbileMoves)" />
+			</div>
+			<div class="form-group">
+				<textarea class="form-control" id="do_move_code" rows="5"></textarea>
+			</div>
+
+			<div class="form-group">
+				<label for="exampleFormControlTextarea1">Your do_continue_jump_move function</label>
+				<input class="form-control" type="text" disabled value="do_continue_jump_move(game, pickedToyId, possibleMoves)" />
+			</div>
+			<div class="form-group">
+				<textarea class="form-control" id="do_continue_jump_move_code" rows="5"></textarea>
+			</div>
+			
+			<button style="margin-top: 20px; margin-bottom: 20px;"class="btn btn-info btn-block action-table btn-big-font" onclick="alert('Still in work');">Run your AI</button>
 		</form>
       </div>
     </div>
@@ -64,7 +89,7 @@
 		</div>
       </div>
     </div>
-    <div class="row">
+    <div class="row" id="table-container" style="display: none;">
       <div class="col-lg-12">
         <table class="table table-striped action-table">
 		  <thead>
