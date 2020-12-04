@@ -15,6 +15,35 @@ class Game
 		this.toys.push(new Toy(7, 1, 5, 4));
 	}
 	
+	all_players_possible_moves(player_color = 1)
+	{
+		var all_possible_moves = [];
+		for (var toy_index = 0; toy_index < this.toys.length; toy_index++)
+		{
+			if (this.toys[toy_index].color == player_color)
+			{
+				// add possible new directions
+				var openDirections = this.toys[toy_index].get_open_directions();
+				for (var directionIndex = 0; directionIndex < openDirections.length; directionIndex++)
+				{
+					all_possible_moves.push(new AiMove(AI_MOVE_ADD_DIRECTION, 
+														this.toys[toy_index].id, 
+														openDirections[directionIndex]));
+				}
+				var possibleMoves = this.possible_next_steps(this.toys[toy_index].id, true);
+				for (var moveIndex = 0; moveIndex < possibleMoves.length; moveIndex++)
+				{
+					all_possible_moves.push(new AiMove(AI_MOVE_JUMP, 
+														this.toys[toy_index].id, 
+														NOT_CHOSEN,
+														[possibleMoves[moveIndex].new_x, possibleMoves[moveIndex].new_y],
+														possibleMoves[moveIndex].jump_over));
+				}
+			}
+		}
+		return all_possible_moves;
+	}
+	
 	possible_next_steps(toy_id, allow_near_move)
 	{
 		// find the wanted toy
@@ -136,6 +165,84 @@ class Game
 		return true;
 	}
 	
+	get_toy_location_by_id(toyId)
+	{
+		for (var toy_index = 0; toy_index < this.toys.length; toy_index++)
+		{
+			if (this.toys[toy_index].id == toyId)
+			{
+				return [this.toys[toy_index].x, this.toys[toy_index].y];
+			}
+		}
+	}
+	
+	count_player_toys(playerColor)
+	{
+		var answer = 0;
+		for (var toy_index = 0; toy_index < this.toys.length; toy_index++)
+		{
+			if (this.toys[toy_index].color == playerColor)
+			{
+				answer++;
+			}
+		}
+		return answer;
+	}
+	
+	possible_kill(otherPlayerColor, locX, locY)
+	{
+		var possibleKill = false;
+		// add toy there if needed
+		var toyAdded = false;
+		var killListItem = this.toy_in_location(locX, locY);
+		if (killListItem == NOT_CHOSEN)
+		{
+			this.toys.push(new Toy(NOT_CHOSEN, (otherPlayerColor + 1) % 2, locX, locY));
+			toyAdded = true;
+		}
+		try
+		{
+			var foundKiller = false;
+			// for each other players toy, check if one of it's moves is to kill someone at this location
+			for (var toy_index = 0; toy_index < this.toys.length; toy_index++)
+			{
+				if (this.toys[toy_index].color == otherPlayerColor)
+				{			
+					var thisToyPossibleMoves = this.possible_next_steps(this.toys[toy_index].id, false);
+					for (var moveIndex = 0; moveIndex < thisToyPossibleMoves.length; moveIndex++)
+					{
+						if (thisToyPossibleMoves[moveIndex].killList[0] == killListItem)
+						{
+							possibleKill = true;
+							foundKiller = true;
+							break;
+						}
+					}
+					// just to skip the others if the first one found
+					if (foundKiller)
+					{
+						break;
+					}	
+				}
+			}
+		}
+		catch (error)
+		{
+			// if shadow toy added, delete it
+			if (toyAdded)
+			{
+				this.toys.pop();
+			}
+		}
+		// if shadow toy added, delete it
+		if (toyAdded)
+		{
+			this.toys.pop();
+		}
+		
+		return possibleKill;
+	}
+	
 	toy_in_location(x, y)
 	{
 		for (var toy_index = 0; toy_index < this.toys.length; toy_index++)
@@ -145,6 +252,7 @@ class Game
 				return this.toys[toy_index].id;
 			}
 		}
+		return NOT_CHOSEN;
 	}
 	
 	can_jump(x, y)
@@ -203,115 +311,5 @@ class Game
 			}
 		}
 		return other_player_toys == 0;
-	}
-}
-
-/* toy has location, belongs to a player by it's color, has ID to be indentified and directions it can move upon */
-class Toy
-{
-	constructor(id, color, x, y, directions = [])
-	{
-		this.id = id;
-		this.color = color;
-		this.x = x;
-		this.y = y;
-		this.directions = directions;
-	}
-	
-	copy()
-	{
-		return new Toy(this.id, this.color, this.x, this.y, this.directions);
-	}
-	
-	is_in_location(locations)
-	{
-		for (var location_index = 0; location_index < locations.length; location_index++)
-		{
-			if (this.x == locations[location_index][0] && this.y == locations[location_index][1])
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	get_open_directions()
-	{
-		var answer = [];
-		for (var i = 0; i < 8; i++)
-		{
-			if (!this.directions.includes(i))
-			{
-				answer.push(i);
-			}
-		}
-		return answer;
-	}
-	
-	add_duration(new_duration)
-	{
-		if (this.directions.includes(new_duration))
-		{
-			throw new Execption("Duration " + new_duration + " is already taken for toy (%" + this.id + ")");
-		}
-		this.directions.push(new_duration);
-	}
-	
-	jump(x, y)
-	{
-		this.x = x;
-		this.y = y;
-	}
-	
-	move(duration)
-	{
-		if (!this.directions.includes(duration))
-		{
-			throw new Execption("Duration " + duration + " is not avalible for toy (%" + this.id + ")");
-		}
-		switch (duration)
-		{
-			case 0:
-				self.x -= 1;
-				break;
-			case 1:
-				self.x -= 1;
-				self.y += 1;
-				break;
-			case 2:
-				self.y += 1;
-				break;
-			case 3:
-				self.x += 1;
-				self.y += 1;
-				break;
-			case 4:
-				self.x += 1;
-				break;
-			case 5:
-				self.x += 1;
-				self.y -= 1;
-				break;
-			case 6:
-				self.y -= 1;
-				break;
-			case 7:
-				self.x -= 1;
-				self.y -= 1;
-				break;
-		}
-	}
-}
-
-/* DS to store the meta-data needed for calculate different types of move (near and jump) */
-class Move
-{
-	constructor(toy, new_x, new_y, is_jump, jump_over)
-	{
-		this.toy = toy;
-		this.new_x = new_x;
-		this.new_y = new_y;
-		this.is_jump = is_jump;
-		this.jump_over = jump_over;
 	}
 }

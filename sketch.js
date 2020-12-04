@@ -10,12 +10,12 @@ let GAME_HEIGHT = 600;
 let GAME_WIDTH = GAME_HEIGHT * 7 / 6;
 let NEW_DIRECTION_MARK_R = 10; // the raduis from the center of the toy we print the new directions mark
 let ACTION_TABLE_ID = "actions-table";
-let AI_BTN_ID = "ai-btn";
+let GAME_PLACE = "game-container";
+let START_PLACE = "form-container";
 /* end - changeable consts  */
 
 /* global varibales */
 let game; // the game - toys with meta data
-let aiPlayer; // the ai player
 let is_pick_toy_mode; // status flag
 let is_re_jump_case; // status flag
 let player_turn; // 1 or 2 according to player 0 or 1 which now playing
@@ -26,8 +26,40 @@ let actionCount; // counter of the number of actions for the action table
 
 // print vars
 let boxSize; // box size to print 
+let aiPlayer; // the ai player
+let is_ai = false;
 
 /* end - global varibales */
+
+/* set with what player we want to play */
+function set_second_player(type)
+{
+	switch(type)
+	{
+		case "human":
+			is_ai = false;
+			break;
+		case "easy":
+			is_ai = true;
+			aiPlayer = new AiPlayer();
+			break;
+		case "meduim":
+			is_ai = true;
+			aiPlayer = new AiPlayerMinMax();
+			break;
+		case "hard":
+			is_ai = true;
+			aiPlayer = new AiPlayerDeepQLearning();
+			break;
+	}
+	// show game
+	document.getElementById(GAME_PLACE).style.display = "";
+	document.getElementById(START_PLACE).style.display = "none";
+	// start game
+	loop();
+	// just that the form won't be submited
+	return false;
+}
 
 
 /* Setup function once called at the start */
@@ -48,8 +80,8 @@ function setup()
 	// create game
 	new_game();
 	
-	// create player - it stateless so can be init one time on page load
-	aiPlayer = new AiPlayer(); 
+	// do not start game yet
+	noLoop();
 }
 
 /* set the start conditions for a new game */
@@ -62,7 +94,6 @@ function new_game()
 	actionCount = 0;
 	pickedToy = NOT_CHOSEN;
 	document.getElementById(ACTION_TABLE_ID).innerHTML = "";
-	document.getElementById(AI_BTN_ID).style.opacity = 0;
 }
 
 /* Called every x seconds */
@@ -519,6 +550,7 @@ function do_ai_move()
 					if (game.toys[toyIndex].id == ai_move.pickedToyId)
 					{
 						game.toys[toyIndex].add_duration(ai_move.newDirection);
+						break;
 					}
 				}
 				break;
@@ -532,6 +564,7 @@ function do_ai_move()
 						game.toys[toyIndex].x = ai_move.newLocation[0];
 						game.toys[toyIndex].y = ai_move.newLocation[1];
 						aiPickedToy = game.toys[toyIndex];
+						break;
 					}
 				}
 				// kill the toys we jump over
@@ -541,10 +574,11 @@ function do_ai_move()
 				}
 				break;
 		}
+		swithPlayer();
 	}
 	catch (error)
 	{
-		alert("AI currently not working - should work really soon");
+		alert("AI currently not working... please make its move. The error recorded is: " + error);
 	}
 	return false;
 }
@@ -555,12 +589,17 @@ function swithPlayer()
 	if (player_turn == 1)
 	{
 		player_turn = 2;
-		document.getElementById(AI_BTN_ID).style.opacity = 1;
+		if (is_ai)
+		{
+			// wait a bit for the player to see it's change and run the AI's move
+			setTimeout(function (){
+				do_ai_move();
+			}, 250);
+		}
 	}
 	else
 	{
 		player_turn = 1;
-		document.getElementById(AI_BTN_ID).style.opacity = 0;
 	}
 	is_pick_toy_mode = false;
 	is_re_jump_case = false;
