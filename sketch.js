@@ -46,7 +46,7 @@ function set_second_player(type)
 			break;
 		case "meduim":
 			is_ai = true;
-			aiPlayer = new AiPlayerMinMax();
+			aiPlayer = new AiPlayerMinMax(1, 5);
 			break;
 		case "hard":
 			is_ai = true;
@@ -607,7 +607,9 @@ function do_ai_move()
 	}
 	catch (error)
 	{
-		alert("AI currently not working... please make its move. The error recorded is: " + error);
+		var error_message = "AI currently not working... please make its move. The error recorded is: " + error;
+		console.error(error_message);
+		alert(error_message);
 	}
 	return false;
 }

@@ -1,45 +1,69 @@
 /* game has list of toys and some logic on how they can move */
 class Game
 {
-	constructor()
+	constructor(toys = [])
 	{
-		this.shadow_toys = [];
-		this.toys = [];
-		// this is static because the game always starts in the same way 
-		this.toys.push(new Toy(0, 0, 1, 1));
-		this.toys.push(new Toy(1, 0, 1, 2));
-		this.toys.push(new Toy(2, 0, 1, 3));
-		this.toys.push(new Toy(3, 0, 1, 4));
-		this.toys.push(new Toy(4, 1, 5, 1));
-		this.toys.push(new Toy(5, 1, 5, 2));
-		this.toys.push(new Toy(6, 1, 5, 3));
-		this.toys.push(new Toy(7, 1, 5, 4));
-	}
-	
-	add_shadow_toy(toyId)
-	{
-		for (var toy_index = 0; toy_index < this.toys.length; toy_index++)
+		this.shadow_toys = []; // used just for AI analysis 
+		if (toys.length == 0)
+		{		
+			this.toys = [];
+			// this is static because the game always starts in the same way 
+			this.toys.push(new Toy(0, 0, 1, 1));
+			this.toys.push(new Toy(1, 0, 1, 2));
+			this.toys.push(new Toy(2, 0, 1, 3));
+			this.toys.push(new Toy(3, 0, 1, 4));
+			this.toys.push(new Toy(4, 1, 5, 1));
+			this.toys.push(new Toy(5, 1, 5, 2));
+			this.toys.push(new Toy(6, 1, 5, 3));
+			this.toys.push(new Toy(7, 1, 5, 4));	
+		}
+		else
 		{
-			if (this.toys[toy_index].id == toyId)
-			{
-				this.shadow_toys.push(this.toys[toy_index]);
-				this.toys.splice(toy_index, 1);
-				break;
-			}
+			this.toys = JSON.parse(JSON.stringify(toys));
 		}
 	}
 	
-	release_shadow_toy(toyId)
+	run_move(ai_move)
 	{
-		for (var toy_index = 0; toy_index < this.shadow_toys.length; toy_index++)
+		// first, make copy of the game
+		let game_copy = new Game(this.toys);
+		switch (ai_move.type)
 		{
-			if (this.shadow_toys[toy_index].id == toyId)
-			{
-				this.toys.push(this.shadow_toys[toy_index]);
-				this.shadow_toys.splice(toy_index, 1);
+			case AI_MOVE_ADD_DIRECTION:
+				// find the right toy and add the new direction
+				for (var toyIndex = 0; toyIndex < game_copy.toys.length; toyIndex++)
+				{
+					if (game_copy.toys[toyIndex].id == ai_move.pickedToyId)
+					{
+						game_copy.toys[toyIndex].directions.push(ai_move.newDirection);
+						break;
+					}
+				}
 				break;
-			}
+			case AI_MOVE_JUMP:
+				let aiPickedToy;
+				// find and move the right toy
+				for (var toyIndex = 0; toyIndex < game_copy.toys.length; toyIndex++)
+				{
+					if (game_copy.toys[toyIndex].id == ai_move.pickedToyId)
+					{
+						game_copy.toys[toyIndex].x = ai_move.newLocation[0];
+						game_copy.toys[toyIndex].y = ai_move.newLocation[1];
+						aiPickedToy = game_copy.toys[toyIndex];
+						break;
+					}
+				}
+				// kill the toys we jump over
+				for (var killToyIndex = 0; killToyIndex < ai_move.killList.length; killToyIndex++)
+				{
+					if (ai_move.killList[killToyIndex] != NOT_CHOSEN)
+					{
+						game_copy.kill_list_from_jump(new Move(aiPickedToy, NOT_CHOSEN, NOT_CHOSEN, true, ai_move.killList[killToyIndex]));	
+					}
+				}
+				break;
 		}
+		return game_copy; // return the game after the move
 	}
 	
 	all_players_possible_moves(player_color = 1)
@@ -178,6 +202,32 @@ class Game
 			}
 		}	
 		return posibleLocations;
+	}
+	
+	add_shadow_toy(toyId)
+	{
+		for (var toy_index = 0; toy_index < this.toys.length; toy_index++)
+		{
+			if (this.toys[toy_index].id == toyId)
+			{
+				this.shadow_toys.push(this.toys[toy_index]);
+				this.toys.splice(toy_index, 1);
+				break;
+			}
+		}
+	}
+	
+	release_shadow_toy(toyId)
+	{
+		for (var toy_index = 0; toy_index < this.shadow_toys.length; toy_index++)
+		{
+			if (this.shadow_toys[toy_index].id == toyId)
+			{
+				this.toys.push(this.shadow_toys[toy_index]);
+				this.shadow_toys.splice(toy_index, 1);
+				break;
+			}
+		}
 	}
 	
 	empty_location(x, y)
@@ -344,5 +394,103 @@ class Game
 			}
 		}
 		return other_player_toys == 0;
+	}
+}
+
+
+/* toy has location, belongs to a player by it's color, has ID to be indentified and directions it can move upon */
+class Toy
+{
+	constructor(id, color, x, y, directions = [])
+	{
+		this.id = id;
+		this.color = color;
+		this.x = x;
+		this.y = y;
+		this.directions = directions;
+	}
+	
+	copy()
+	{
+		return new Toy(this.id, this.color, this.x, this.y, this.directions);
+	}
+	
+	is_in_location(locations)
+	{
+		for (var location_index = 0; location_index < locations.length; location_index++)
+		{
+			if (this.x == locations[location_index][0] && this.y == locations[location_index][1])
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	get_open_directions()
+	{
+		var answer = [];
+		for (var i = 0; i < 8; i++)
+		{
+			if (!this.directions.includes(i))
+			{
+				answer.push(i);
+			}
+		}
+		return answer;
+	}
+	
+	add_duration(new_duration)
+	{
+		if (this.directions.includes(new_duration))
+		{
+			throw new Execption("Duration " + new_duration + " is already taken for toy (%" + this.id + ")");
+		}
+		this.directions.push(new_duration);
+	}
+	
+	jump(x, y)
+	{
+		this.x = x;
+		this.y = y;
+	}
+	
+	move(duration)
+	{
+		if (!this.directions.includes(duration))
+		{
+			throw new Execption("Duration " + duration + " is not avalible for toy (%" + this.id + ")");
+		}
+		switch (duration)
+		{
+			case 0:
+				self.x -= 1;
+				break;
+			case 1:
+				self.x -= 1;
+				self.y += 1;
+				break;
+			case 2:
+				self.y += 1;
+				break;
+			case 3:
+				self.x += 1;
+				self.y += 1;
+				break;
+			case 4:
+				self.x += 1;
+				break;
+			case 5:
+				self.x += 1;
+				self.y -= 1;
+				break;
+			case 6:
+				self.y -= 1;
+				break;
+			case 7:
+				self.x -= 1;
+				self.y -= 1;
+				break;
+		}
 	}
 }

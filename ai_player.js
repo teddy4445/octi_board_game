@@ -162,10 +162,11 @@ class AiPlayer
 	}
 }
 
-class AiPlayerMinMax
+class AiPlayerMinMax extends AiPlayer 
 {
 	constructor(player_color = 1, maxDepth)
 	{
+		super();
 		this.player_color = player_color;
 		this.maxDepth = maxDepth;
 	}
@@ -276,109 +277,13 @@ class AiPlayerMinMax
 		// 4. pick one in random
 		return bestMoves[Math.floor(Math.random() * bestMoves.length)];
 	}
-	
-	// give score to each action (either new direction or jump), update the action's score and return the best score for later use
-	greedy_score(game, actions)
-	{
-		var bestScore = -999; // -inf just to be replaced 
-		for (var actionIndex = 0; actionIndex < actions.length; actionIndex++)
-		{
-			var score = 0;
-			switch (actions[actionIndex].type)
-			{
-				case AI_MOVE_ADD_DIRECTION:
-					score = this.new_direction_score(game, actions[actionIndex]);
-					break;
-				case AI_MOVE_JUMP:
-					score = this.move_score(game, actions[actionIndex]);
-					break;
-			}
-			actions[actionIndex].score = score;
-			if (score > bestScore)
-			{
-				bestScore = score;
-			}
-		}
-		return bestScore;
-	}
-	
-	// give a score to direction if it helps to move closer to the goal
-	new_direction_score(game, action)
-	{
-		var currentToyLocation = game.get_toy_location_by_id(action.pickedToyId);
-		var baseLineDistance = minDistanceFromBase((this.player_color + 1) % 2, currentToyLocation[0], currentToyLocation[1]);
-		switch (action.newDirection)
-		{
-			case 0:
-				currentToyLocation[0] -= 1;
-				break;
-			case 1:
-				currentToyLocation[0] -= 1;
-				currentToyLocation[1] += 1;
-				break;
-			case 2:
-				currentToyLocation[1] += 1;
-				break;
-			case 3:
-				currentToyLocation[0] += 1;
-				currentToyLocation[1] += 1;
-				break;
-			case 4:
-				currentToyLocation[0] += 1;
-				break;
-			case 5:
-				currentToyLocation[0] += 1;
-				currentToyLocation[1] -= 1;
-				break;
-			case 6:
-				currentToyLocation[1] -= 1;
-				break;
-			case 7:
-				currentToyLocation[0] -= 1;
-				currentToyLocation[1] -= 1;
-				break;
-		}
-		var newLineDistance = minDistanceFromBase((this.player_color + 1) % 2, currentToyLocation[0], currentToyLocation[1]);
-		return baseLineDistance - 1.5 * newLineDistance;
-	}
-	
-	move_score(game, action)
-	{
-		var currentToyLocation = game.get_toy_location_by_id(action.pickedToyId);
-		var baseDistance = minDistanceFromBase((this.player_color + 1) % 2, currentToyLocation[0], currentToyLocation[0]);
-		var afterMoveDistance = minDistanceFromBase((this.player_color + 1) % 2, action.newLocation[0], action.newLocation[1]);
-		var isKillPossible = 0;
-		// if by doing this move, we win - do it
-		if (afterMoveDistance == 0)
-		{
-			console.log("Toy #" + action.pickedToyId + " has winning move to: (" + action.newLocation[0] + ", " + action.newLocation[1] + ")");
-			return LARGEST_SCORE;
-		}
-		else if (action.killList.length > 0 && action.killList[0] != NOT_CHOSEN) // if we kill someone, we would like to do it
-		{
-			console.log("Toy #" + action.pickedToyId + " has killing move to: (" + action.newLocation[0] + ", " + action.newLocation[1] + ") over toy #" + action.killList[0]);
-			return Math.floor(LARGEST_SCORE / (5 - game.count_player_toys((this.player_color + 1) % 2)));
-		}
-		
-		// shadow this toy so it won't mess with the analysis
-		game.add_shadow_toy(action.pickedToyId);
-		// check if can be killed in this move
-		var canBeEaten = game.possible_kill((this.player_color + 1) % 2, action.newLocation[0], action.newLocation[1]);
-		// release the toy back
-		game.release_shadow_toy(action.pickedToyId);
-		
-		if (canBeEaten) // if we will be eaten next move we do not want it but in general move torwards the second player's base
-		{
-			isKillPossible = 1;
-		}
-		return baseDistance - 1.5 * afterMoveDistance - POSSIBLE_KILL_PANISHMENT * isKillPossible;
-	}
 }
 
-class AiPlayerDeepQLearning
+class AiPlayerDeepQLearning extends AiPlayer 
 {
 	constructor(player_color = 1)
 	{
+		super();
 		this.player_color = player_color;
 	}
 	
