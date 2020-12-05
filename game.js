@@ -307,6 +307,11 @@ class Game
 		}
 	}
 	
+	is_there_winner()
+	{
+		return this.is_player_one_win() || this.is_player_two_win();
+	}
+	
 	is_player_one_win()
 	{
 		var other_player_toys = 0;
