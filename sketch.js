@@ -46,7 +46,7 @@ function set_second_player(type)
 			break;
 		case "meduim":
 			is_ai = true;
-			aiPlayer = new AiPlayerMinMax(1, 5);
+			aiPlayer = new AiPlayerMinMax(1, 2);
 			break;
 		case "hard":
 			is_ai = true;

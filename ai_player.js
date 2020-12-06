@@ -169,6 +169,7 @@ class AiPlayerMinMax extends AiPlayer
 		super();
 		this.player_color = player_color;
 		this.maxDepth = maxDepth;
+		this.testNumber = 0;
 	}
 	
 	do_move(game)
@@ -178,12 +179,14 @@ class AiPlayerMinMax extends AiPlayer
 		// AI to make its turn
 		let bestScore = -Infinity;
 		let bestMove;
+		this.testNumber = 0;
 		for (var actionIndex = 0; actionIndex < allPossbileMoves.length; actionIndex++)
 		{
+			this.testNumber++;
 			// make copy of game after a given move
-			new_game = game.run_move(allPossbileMoves[actionIndex]);
+			var next_move_game = game.run_move(allPossbileMoves[actionIndex]);
 			// check it's min-max score
-			let score = this.minimax(new_game, 0, false);
+			let score = this.minimax(next_move_game, 1, false);
 			// if best one, do it 
 			if (score > bestScore) 
 			{
@@ -196,6 +199,8 @@ class AiPlayerMinMax extends AiPlayer
 	
 	minimax(game, depth, isMaximizing) 
 	{
+		console.log("Ai minimax check #" + this.testNumber + " in depth: " + depth);
+		this.testNumber++;
 		// if we get to the max depth calc the overall score of the process
 		if (depth == this.maxDepth)
 		{
@@ -223,8 +228,8 @@ class AiPlayerMinMax extends AiPlayer
 			for (var actionIndex = 0; actionIndex < actions.length; actionIndex++)
 			{
 				// make copy of game after a given move
-				new_game = game.run_move(allPossbileMoves[actionIndex]);
-				let score = minimax(board, depth + 1, false);
+				var next_move_game = game.run_move(allPossbileMoves[actionIndex]);
+				let score = this.minimax(next_move_game, depth + 1, false);
 				bestScore = max(score, bestScore);
 			}
 			return bestScore;
@@ -233,11 +238,11 @@ class AiPlayerMinMax extends AiPlayer
 		{
 			let bestScore = Infinity;
 			var allPossbileMoves = game.all_players_possible_moves((this.player_color + 1)%2);
-			for (var actionIndex = 0; actionIndex < actions.length; actionIndex++)
+			for (var actionIndex = 0; actionIndex < allPossbileMoves.length; actionIndex++)
 			{
 				// make copy of game after a given move
-				new_game = game.run_move(allPossbileMoves[actionIndex]);
-				let score = minimax(board, depth + 1, false);
+				var next_move_game = game.run_move(allPossbileMoves[actionIndex]);
+				let score = this.minimax(next_move_game, depth + 1, false);
 				bestScore = min(score, bestScore);
 			}
 			return bestScore;

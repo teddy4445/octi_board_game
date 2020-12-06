@@ -74,7 +74,7 @@ class Game
 			if (this.toys[toy_index].color == player_color)
 			{
 				// add possible new directions
-				var openDirections = this.toys[toy_index].get_open_directions();
+				var openDirections = this.get_toy_open_directions(this.toys[toy_index]);
 				for (var directionIndex = 0; directionIndex < openDirections.length; directionIndex++)
 				{
 					all_possible_moves.push(new AiMove(AI_MOVE_ADD_DIRECTION, 
@@ -364,14 +364,31 @@ class Game
 	
 	is_player_one_win()
 	{
+		return this.is_player_won(0);
+	}
+	
+	is_player_two_win()
+	{
+		return this.is_player_won(1);
+	}
+	
+	is_player_won(myPlayerColor)
+	{
+		var otherPlayerColor = (myPlayerColor + 1) % 2;
+		var check_base = PLAYER_ONE_BASE;
+		if (myPlayerColor == 0)
+		{
+			check_base = PLAYER_TWO_BASE;
+		}
+		
 		var other_player_toys = 0;
 		for (var toy_index = 0; toy_index < this.toys.length; toy_index++)
 		{
-			if (this.toys[toy_index].color == 0 && this.toys[toy_index].is_in_location(PLAYER_TWO_BASE))
+			if (this.toys[toy_index].color == myPlayerColor && this.is_toy_in_locations(this.toys[toy_index], check_base))
 			{
 				return true;
 			}
-			if (this.toys[toy_index].color == 1)
+			if (this.toys[toy_index].color == otherPlayerColor)
 			{
 				other_player_toys++;
 			}
@@ -379,21 +396,29 @@ class Game
 		return other_player_toys == 0;
 	}
 	
-	is_player_two_win()
+	is_toy_in_locations(toy, locations)
 	{
-		var other_player_toys = 0;
-		for (var toy_index = 0; toy_index < this.toys.length; toy_index++)
+		for (var location_index = 0; location_index < locations.length; location_index++)
 		{
-			if (this.toys[toy_index].color == 1 && this.toys[toy_index].is_in_location(PLAYER_ONE_BASE))
+			if (toy.x == locations[location_index][0] && toy.y == locations[location_index][1])
 			{
 				return true;
 			}
-			if (this.toys[toy_index].color == 0)
+		}
+		return false;
+	}
+	
+	get_toy_open_directions(toy)
+	{
+		var answer = [];
+		for (var i = 0; i < 8; i++)
+		{
+			if (!toy.directions.includes(i))
 			{
-				other_player_toys++;
+				answer.push(i);
 			}
 		}
-		return other_player_toys == 0;
+		return answer;
 	}
 }
 
