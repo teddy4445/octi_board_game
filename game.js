@@ -66,6 +66,99 @@ class Game
 		return game_copy; // return the game after the move
 	}
 	
+	/*
+		get the game's state as a set of features
+	*/
+	state()
+	{
+		// the vector contains the main things we have in the game
+		var firstPlayerToysCount = game.count_player_toys(0);
+		var secondPlayerToysCount = game.count_player_toys(1);
+		
+		var firstPlayerDistanceFromBases = 0;
+		var secondPlayerDistanceFromBases = 0;
+		
+		var firstPlayerUpgrades = 0;
+		var secondPlayerUpgrades = 0;
+		
+		for (var toyIndex = 0; toyIndex < game.toys.length; toyIndex++)
+		{
+			if (game.toys[toyIndex].color == 0)
+			{
+				firstPlayerDistanceFromBases += minDistanceFromBase(1, game.toys[toyIndex].x, game.toys[toyIndex].y);
+				
+				for (var i = 0; i < game.toys[toyIndex].directions.length; i++)
+				{
+					switch (game.toys[toyIndex].directions[i])
+					{
+						case 0:
+							firstPlayerUpgrades += 0;
+						case 1:
+							firstPlayerUpgrades += 0.5;
+							break;
+						case 2:
+							firstPlayerUpgrades += 1;
+							break;
+						case 3:
+							firstPlayerUpgrades += 1;
+							break;
+						case 4:
+							firstPlayerUpgrades += 1;
+							break;
+						case 5:
+							firstPlayerUpgrades += 1;
+							break;
+						case 6:
+							firstPlayerUpgrades += 0,5;
+							break;
+						case 7:
+							firstPlayerUpgrades += 0;
+							break;
+					}
+				}
+			}
+			else
+			{
+				secondPlayerDistanceFromBases += minDistanceFromBase(1, game.toys[toyIndex].x, game.toys[toyIndex].y);
+				for (var i = 0; i < game.toys[toyIndex].directions.length; i++)
+				{
+					switch (game.toys[toyIndex].directions[i])
+					{
+						case 0:
+							secondPlayerUpgrades += 0;
+						case 1:
+							secondPlayerUpgrades += 0.5;
+							break;
+						case 2:
+							secondPlayerUpgrades += 1;
+							break;
+						case 3:
+							secondPlayerUpgrades += 1;
+							break;
+						case 4:
+							secondPlayerUpgrades += 1;
+							break;
+						case 5:
+							secondPlayerUpgrades += 1;
+							break;
+						case 6:
+							secondPlayerUpgrades += 0,5;
+							break;
+						case 7:
+							secondPlayerUpgrades += 0;
+							break;
+					}
+				}
+			}
+		}
+		return [firstPlayerToysCount, 
+				secondPlayerToysCount, 
+				firstPlayerDistanceFromBases, 
+				secondPlayerDistanceFromBases, 
+				firstPlayerUpgrades,
+				secondPlayerUpgrades];
+	}
+	
 	all_players_possible_moves(player_color = 1)
 	{
 		var all_possible_moves = [];
