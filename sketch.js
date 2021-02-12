@@ -46,11 +46,15 @@ function set_second_player(type)
 			break;
 		case "meduim":
 			is_ai = true;
-			aiPlayer = new AiPlayerMinMax(1, 2);
+			aiPlayer = new AiPlayerMinMax(1, 3);
 			break;
 		case "hard":
 			is_ai = true;
-			aiPlayer = new AiPlayerDeepQLearning();
+			aiPlayer = new AiPlayerQLearning();
+			break;
+		case "master":
+			is_ai = true;
+			aiPlayer = new AiPlayerNueroEvaluationQLearning();
 			break;
 	}
 	// show game
