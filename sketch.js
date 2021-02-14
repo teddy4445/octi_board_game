@@ -24,11 +24,14 @@ let pickedToy; // global info between function about what toy is now picked
 let thisPossibleNextSteps; // global info between function about what next steps are possible (so we calculate them once)
 let actionCount; // counter of the number of actions for the action table 
 
-
 // print vars
 let boxSize; // box size to print 
 let aiPlayer; // the ai player
 let is_ai = false;
+
+// user ai functions
+let user_do_move_code = null;
+let user_do_continue_jump_move_code = null;
 
 /* end - global varibales */
 
@@ -56,6 +59,14 @@ function set_second_player(type)
 			is_ai = true;
 			aiPlayer = new AiPlayerNueroEvaluationQLearning();
 			break;
+		case "master":
+			is_ai = true;
+			aiPlayer = new AiPlayerNueroEvaluationQLearning();
+			break;
+		case "user":
+			is_ai = true;
+			aiPlayer = new UserAI();
+			break;
 	}
 	// show game
 	document.getElementById(GAME_PLACE).style.display = "";
@@ -65,6 +76,35 @@ function set_second_player(type)
 	loop();
 	// just that the form won't be submited
 	return false;
+}
+
+// compile the AI player provided by the user 
+function compile_ai()
+{
+	try
+	{
+		// get the code from the user 
+		var do_move_code = document.getElementById("do_move_code").value;
+		var do_continue_jump_move_code = document.getElementById("do_continue_jump_move_code").value;
+		
+		// wrap with the function calls
+		/*
+		do_move_code = "function do_move(game, allPossbileMoves){" + do_move_code + "}";
+		do_continue_jump_move_code = "function do_continue_jump_move(game, pickedToyId, possibleMoves){" + do_move_code + "}";
+		*/
+		
+		// set as functions inside the model
+		user_do_move_code = do_move_code;
+		user_do_continue_jump_move_code = do_continue_jump_move_code;
+		
+		// allow second player
+		return set_second_player("user");
+	}
+	catch (error)
+	{
+		alert("Error at 'compile_ai' saying: " + error);
+		return false;
+	}
 }
 
 function show_your_ai_panel()
@@ -161,7 +201,7 @@ function win_senario(playerWin)
 		stroke(0, 93, 80);
 	}
 	// record move for later use 
-	actionRowHTML("Player " + player_turn + " win the Game");
+	actionRowHTML("Player " + playerWin + " win the Game");
 	// show wining text
 	text("player " + playerWin + " win!", GAME_WIDTH / 2, GAME_HEIGHT / 2);
 	// stop draw loop for a bit
@@ -488,7 +528,15 @@ function mouseClicked()
 			if (thisPossibleNextSteps[nextLocationCheck].is_jump)
 			{
 				game.kill_list_from_jump(thisPossibleNextSteps[nextLocationCheck]);	
-				actionRowHTML("Toy " + pickedToy.id + " kill toy " + thisPossibleNextSteps[nextLocationCheck].id);
+				// if same group or not 
+				if ((pickedToy.id < 4 && thisPossibleNextSteps[nextLocationCheck].jump_over < 4) || (4 <= pickedToy.id && pickedToy.id < 8 && 4 <= thisPossibleNextSteps[nextLocationCheck].jump_over && thisPossibleNextSteps[nextLocationCheck].jump_over < 8))
+				{
+					actionRowHTML("Toy " + pickedToy.id + " jump over toy " + thisPossibleNextSteps[nextLocationCheck].jump_over);
+				}
+				else
+				{
+					actionRowHTML("Toy " + pickedToy.id + " kill toy " + thisPossibleNextSteps[nextLocationCheck].jump_over);
+				}
 				thisPossibleNextSteps = game.possible_next_steps(pickedToy.id, false);
 				if (thisPossibleNextSteps.length > 0)
 				{
@@ -520,7 +568,15 @@ function mouseClicked()
 			if (thisPossibleNextSteps[nextLocationCheck].is_jump)
 			{
 				game.kill_list_from_jump(thisPossibleNextSteps[nextLocationCheck]);	
-				actionRowHTML("Toy " + pickedToy.id + " kill toy " + thisPossibleNextSteps[nextLocationCheck].id);
+				// if same group or not 
+				if ((pickedToy.id < 4 && thisPossibleNextSteps[nextLocationCheck].jump_over < 4) || (4 <= pickedToy.id && pickedToy.id < 8 && 4 <= thisPossibleNextSteps[nextLocationCheck].jump_over && thisPossibleNextSteps[nextLocationCheck].jump_over < 8))
+				{
+					actionRowHTML("Toy " + pickedToy.id + " jump over toy " + thisPossibleNextSteps[nextLocationCheck].jump_over);
+				}
+				else
+				{
+					actionRowHTML("Toy " + pickedToy.id + " kill toy " + thisPossibleNextSteps[nextLocationCheck].jump_over);
+				}
 				thisPossibleNextSteps = game.possible_next_steps(pickedToy.id, false);
 				if (thisPossibleNextSteps.length > 0)
 				{
@@ -621,7 +677,7 @@ function do_ai_move()
 /* allow AI to do multiple jumps if possible in the same turn */
 function do_ai_jump_move(toyId)
 {
-	var ai_move = aiPlayer.do_continue_jump_move(toyId, thisPossibleNextSteps);
+	var ai_move = aiPlayer.do_continue_jump_move(game, toyId, thisPossibleNextSteps);
 	for (var toyIndex = 0; toyIndex < game.toys.length; toyIndex++)
 	{
 		if (game.toys[toyIndex].id == ai_move.pickedToyId)

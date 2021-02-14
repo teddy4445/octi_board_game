@@ -20,6 +20,7 @@
 		<script src="player.js"></script>
 		<script src="ai_player.js"></script>
 		<script src="sketch.js"></script>
+		<script src="ai_util.js"></script>
 		<link rel="stylesheet" href="style.css">
 
 		  <!-- Bootstrap core CSS -->
@@ -30,7 +31,7 @@
   <!-- Navigation -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
     <div class="container">
-      <a class="navbar-brand" href="#">Octi Game</a>
+      <a class="navbar-brand" href="/">OCTI Game</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -72,23 +73,40 @@
 			<button style="margin-bottom: 20px; margin-top: 20px;"class="btn btn-info" onclick="return close_your_ai_panel();">Back</button>
 			<h2>Your code</h2>
 			<p>Check out the full documentation of the project <a href="#">here</a> to know how to write your AI player</p>
+			
+			<h4 style="margin-top: 20px; font-size: 1.2rem;">Quick Intro:</h4>
+			<p>1. You need to implement two functions. First, the <b>do_move</b> which is responsible to the basic move the AI player is doing in each turn.
+			Second, <b>do_continue_jump_move</b> is the function that will run if a toy is possible to continue and jump over other toys.</p>
+			<p>2. the picked move must be assigned into the <i>answer</i> var. Note that re-declaration of the <i>answer</i> var (using either 'let' or 'var') will result in error.<p>
+			<p>3. The code must be in pure JS (don't assume any function given aside the ones in the P5.JS library).<p>
+			<p>4. If you wish to declare more functions and write complex logic, we suggest just to fork the project from <a href="https://github.com/teddy4445/octi_board_game">here</a> and do it outside the scope of this play ground.<p>
+			<p>5. Please try avoiding hacking into the website, this is a Front-End only host, you are able to get the code free of charge <a href="https://github.com/teddy4445/octi_board_game">here</a> .<p>
+			
 			<div class="form-group">
-				<label for="exampleFormControlTextarea1">Your do_move function</label>
+				<label for="exampleFormControlTextarea1"><b>Your do_move function</b></label>
 				<input class="form-control" type="text" disabled value="do_move(game, allPossbileMoves)" />
 			</div>
 			<div class="form-group">
-				<textarea class="form-control" id="do_move_code" rows="5"></textarea>
+				<textarea class="form-control" id="do_move_code" rows="10">answer = allPossbileMoves[Math.floor(Math.random() * allPossbileMoves.length)];</textarea>
 			</div>
+			<p><b>game</b> - is the game object with all the properties that are found in the documentation. <br>
+			<b>allPossbileMoves</b> - list of all possible moves the AI can pick from them. <br>
+			</p>
 
 			<div class="form-group">
-				<label for="exampleFormControlTextarea1">Your do_continue_jump_move function</label>
-				<input class="form-control" type="text" disabled value="do_continue_jump_move(game, pickedToyId, possibleMoves)" />
+				<label for="exampleFormControlTextarea1"><b>Your do_continue_jump_move function</b></label>
+				<input class="form-control" type="text" disabled value="do_continue_jump_move(game, toyId, possibleMoves)" />
 			</div>
 			<div class="form-group">
-				<textarea class="form-control" id="do_continue_jump_move_code" rows="5"></textarea>
+				<textarea class="form-control" id="do_continue_jump_move_code" rows="10">answer = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];</textarea>
 			</div>
+			<p><b>game</b> - is the game object with all the properties that are found in the documentation. <br>
+			<b>toyId</b> - the Id of the toy that currently playing. <br>
+			<b>possibleMoves</b> - list of all possible moves the AI can pick from them. <br>
+			</p>
+			<p style="padding-top: 20px"><b>Note:</b> the default AI player is set to pick a possible move in random for each turn. This is a good place to start with but this is not a good player at all.</p>
 			
-			<button style="margin-top: 20px; margin-bottom: 20px;"class="btn btn-info btn-block action-table btn-big-font" onclick="alert('Still in work');">Run your AI</button>
+			<button style="margin-top: 20px; margin-bottom: 20px;"class="btn btn-info btn-block action-table btn-big-font" onclick="return compile_ai();">Run your AI</button>
 		</form>
       </div>
     </div>

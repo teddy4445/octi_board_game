@@ -12,7 +12,6 @@ class Move
 	
 	convert_to_ai_move()
 	{
-		
 		return new AiMove(AI_MOVE_JUMP, this.toy.id, NOT_CHOSEN, [this.new_x, this.new_y], [this.jump_over], 0);
 	}
 }
