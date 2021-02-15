@@ -13,6 +13,12 @@ class AiPlayer
 		this.player_color = player_color;
 	}
 	
+	// make sure we can download the model's state (usully after train)
+	download_policy()
+	{
+		return "";
+	}
+	
 	// make a greedy move by finding all possible actions, then score them, pick the best ones and pick from them randomly
 	do_move(game)
 	{
@@ -34,7 +40,7 @@ class AiPlayer
 	}
 	
 	// decide where is the next place to jump to
-	do_continue_jump_move(toyId, possibleMoves)
+	do_continue_jump_move(game, toyId, possibleMoves)
 	{
 		// convert to the object we need
 		var aiPossibleMoves = [];
@@ -178,6 +184,11 @@ class AiPlayerMinMax extends AiPlayer
 		this.testNumber = 0;
 	}
 	
+	download_policy()
+	{
+		return "";
+	}
+	
 	do_move(game)
 	{
 		this.testNumber = 0;
@@ -256,7 +267,7 @@ class AiPlayerMinMax extends AiPlayer
 	}
 	
 	// decide where is the next place to jump to
-	do_continue_jump_move(toyId, possibleMoves)
+	do_continue_jump_move(game, toyId, possibleMoves)
 	{
 		
 		// convert to the object we need
@@ -353,6 +364,12 @@ class AiPlayerQLearning extends AiPlayer
 	{
 		super();
 		this.player_color = player_color;
+		this.policy = AiUtil.readModel(MODEL_Q_LEARNING);
+	}
+	
+	download_policy()
+	{
+		return this.policy;
 	}
 	
 	do_move(game)
@@ -361,7 +378,7 @@ class AiPlayerQLearning extends AiPlayer
 	}
 	
 	// decide where is the next place to jump to
-	do_continue_jump_move(toyId, possibleMoves)
+	do_continue_jump_move(game, toyId, possibleMoves)
 	{
 		return possibleMoves[0];
 	}
@@ -373,6 +390,12 @@ class AiPlayerNueroEvaluationQLearning extends AiPlayer
 	{
 		super();
 		this.player_color = player_color;
+		this.policy = AiUtil.readModel(MODEL_NEURO_EVALUATION_Q_LEARNING);
+	}
+	
+	download_policy()
+	{
+		return this.policy;
 	}
 	
 	do_move(game)
@@ -381,8 +404,39 @@ class AiPlayerNueroEvaluationQLearning extends AiPlayer
 	}
 	
 	// decide where is the next place to jump to
-	do_continue_jump_move(toyId, possibleMoves)
+	do_continue_jump_move(game, toyId, possibleMoves)
 	{
 		return possibleMoves[0];
+	}
+}
+
+class UserAI extends AiPlayer 
+{
+	constructor(player_color = 1)
+	{
+		super();
+		this.player_color = player_color;
+	}
+	
+	download_policy()
+	{
+		return "";
+	}
+	
+	do_move(game)
+	{
+		// 1. find all the possible moves we can decide from
+		var allPossbileMoves = game.all_players_possible_moves(this.player_color);
+		var answer = allPossbileMoves[0];
+		eval(user_do_move_code);
+		return answer;
+	}
+	
+	// decide where is the next place to jump to
+	do_continue_jump_move(game, toyId, possibleMoves)
+	{
+		var answer = possibleMoves[0];
+		eval(user_do_continue_jump_move_code);
+		return answer;
 	}
 }
