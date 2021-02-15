@@ -683,14 +683,21 @@ function swithPlayer()
 /* checkc if the mouse on\clicked close to a toy */
 function clickNextToPickToy(checkX, checkY)
 {
+	var closestToy = NOT_CHOSEN;
+	var closestToyDistance = 99999;
 	for (var toyIndex = 0; toyIndex < game.toys.length; toyIndex++)
 	{
-		if ((player_turn == 1 && game.toys[toyIndex].color == 0 && dist(checkX, checkY, (game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize) < boxSize) || (player_turn == 2 && game.toys[toyIndex].color == 1 && dist(checkX, checkY, (game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize) < boxSize * 0.33))
+		var distance = dist(checkX, checkY, (game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize);
+		if ((player_turn == 1 && game.toys[toyIndex].color == 0 && distance < boxSize) || (player_turn == 2 && game.toys[toyIndex].color == 1 && distance < boxSize * 0.33))
 		{
-			return game.toys[toyIndex];
+			if (distance < closestToyDistance)
+			{
+				closestToyDistance = distance;
+				closestToy = game.toys[toyIndex];
+			}
 		}
 	}
-	return NOT_CHOSEN;
+	return closestToy;
 }
 
 /* checkc if the mouse on\clicked close to a next possible tile to move to */
