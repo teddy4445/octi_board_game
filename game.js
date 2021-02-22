@@ -67,9 +67,46 @@ class Game
 	}
 	
 	/*
-		get the game's state as a set of features
+		Get game's state as the location of the toys and there directions
 	*/
 	state()
+	{
+		var answer = [];
+		for (var toyId = 0; toyId < 8; toyId++)
+		{
+			try
+			{
+				var thisToy = this.get_toy_by_id(toyId);
+				ansewr.push(thisToy.color);
+				ansewr.push(thisToy.x);
+				ansewr.push(thisToy.y);
+				var directionStatus = thisToy.directions_status();
+				for (var directionIndex = 0; directionIndex < directionStatus.length; directionIndex++)
+				{
+					ansewr.push(directionStatus[directionIndex]);
+				}	
+			}
+			catch (error)
+			{
+				ansewr.push(-1);
+				ansewr.push(-1);
+				ansewr.push(-1);
+				for (var directionIndex = 0; directionIndex < 8; directionIndex++)
+				{
+					ansewr.push(0);
+				}
+			}
+		}
+		return answer;
+	}
+	
+	
+	
+	
+	/*
+		get the game's general state state so humans can get sence what boards as a set of features
+	*/
+	general_status_state()
 	{
 		// the vector contains the main things we have in the game
 		var firstPlayerToysCount = game.count_player_toys(0);
@@ -109,7 +146,7 @@ class Game
 							firstPlayerUpgrades += 1;
 							break;
 						case 6:
-							firstPlayerUpgrades += 0,5;
+							firstPlayerUpgrades += 0.5;
 							break;
 						case 7:
 							firstPlayerUpgrades += 0;
@@ -142,7 +179,7 @@ class Game
 							secondPlayerUpgrades += 1;
 							break;
 						case 6:
-							secondPlayerUpgrades += 0,5;
+							secondPlayerUpgrades += 0.5;
 							break;
 						case 7:
 							secondPlayerUpgrades += 0;
@@ -512,6 +549,19 @@ class Game
 			}
 		}
 		return answer;
+	}
+	
+	get_toy_by_id(toyId)
+	{
+		var answer = [];
+		for (var i = 0; i < this.toys.length; i++)
+		{
+			if (this.toys[i].id == toyId)
+			{
+				return this.toys[i];
+			}
+		}
+		throw Execption("No toy with ID:" + toyId);
 	}
 }
 

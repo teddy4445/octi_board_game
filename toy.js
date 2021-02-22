@@ -27,6 +27,23 @@ class Toy
 		return false;
 	}
 	
+	directions_status()
+	{
+		var answer = [];
+		for (var i = 0; i < 8; i++)
+		{
+			if (this.directions.includes(i))
+			{
+				answer.push(1);
+			}
+			else
+			{
+				answer.push(0);
+			}
+		}
+		return answer;
+	}
+	
 	get_open_directions()
 	{
 		var answer = [];

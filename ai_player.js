@@ -364,7 +364,7 @@ class AiPlayerQLearning extends AiPlayer
 	{
 		super();
 		this.player_color = player_color;
-		this.policy = AiUtil.readModel(MODEL_Q_LEARNING);
+		this.policy = AiPolicy(); // AiPolicy.fromJson(AiUtil.readModel(MODEL_Q_LEARNING));
 	}
 	
 	download_policy()
@@ -374,7 +374,10 @@ class AiPlayerQLearning extends AiPlayer
 	
 	do_move(game)
 	{
-		return null;
+		var gameState = game.state(); // vector
+		var allPossbileMoves = game.all_players_possible_moves(this.player_color); // vector of AiMove (plays as our actions)
+		
+		return this.policy.findBestMove(game);
 	}
 	
 	// decide where is the next place to jump to
@@ -390,7 +393,7 @@ class AiPlayerNueroEvaluationQLearning extends AiPlayer
 	{
 		super();
 		this.player_color = player_color;
-		this.policy = AiUtil.readModel(MODEL_NEURO_EVALUATION_Q_LEARNING);
+		this.policy = AiPolicy(); // AiPolicy.fromJson(AiUtil.readModel(MODEL_NEURO_EVALUATION_Q_LEARNING));
 	}
 	
 	download_policy()
