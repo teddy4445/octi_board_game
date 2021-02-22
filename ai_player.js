@@ -358,7 +358,7 @@ class AiPlayerMinMax extends AiPlayer
 	}
 }
 
-class AiPlayerNueroEvaluationQLearning extends AiPlayer 
+class AiPlayerQLearning extends AiPlayer 
 {
 	constructor(player_color = 1)
 	{

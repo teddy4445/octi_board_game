@@ -61,7 +61,7 @@ class Toy
 	{
 		if (this.directions.includes(new_duration))
 		{
-			throw new Execption("Duration " + new_duration + " is already taken for toy (%" + this.id + ")");
+			throw new Execption("Duration " + new_duration + " is already taken for toy (#" + this.id + ")");
 		}
 		this.directions.push(new_duration);
 	}
