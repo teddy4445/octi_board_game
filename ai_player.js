@@ -364,7 +364,7 @@ class AiPlayerQLearning extends AiPlayer
 	{
 		super();
 		this.player_color = player_color;
-		this.policy = AiPolicy(); // AiPolicy.fromJson(AiUtil.readModel(MODEL_NEURO_EVALUATION_Q_LEARNING));
+		this.policy = QLearningPolicy(AiUtil.readModel(MODEL_Q_LEARNING));
 	}
 	
 	download_policy()

@@ -1,7 +1,7 @@
 /* This class is responsible to wrap the Q-leanring AI agent policy to make it easy to use */
 class QLearningPolicy
 {
-	constructor(statesActions = {})
+	constructor(statesActions)
 	{
 		this.statesActions = statesActions;
 	}
@@ -26,10 +26,11 @@ class QLearningPolicy
 
 
 
-class Pair
+class ActionScorePair
 {
 	constructor(action, score)
 	{
-		statesActions
+		this.action = action;
+		this.score = score;
 	}
 }
