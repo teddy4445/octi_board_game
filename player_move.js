@@ -15,4 +15,14 @@ class AiMove
 		this.killList = killList;
 		this.score = score;
 	}
+	
+	encode()
+	{
+		return [this.type, this.pickedToyId, this.newDirection, this.newLocation, this.killList];
+	}
+	
+	decode(data)
+	{
+		return new AiMove(data[0], data[1], data[2], data[3], data[4]);
+	}
 }

@@ -29,6 +29,9 @@ let boxSize; // box size to print
 let aiPlayer; // the ai player
 let is_ai = false;
 
+// used to learn the game
+let gameHistory;
+
 // user ai functions
 let user_do_move_code = null;
 let user_do_continue_jump_move_code = null;
@@ -52,14 +55,6 @@ function set_second_player(type)
 			aiPlayer = new AiPlayerMinMax(1, 3);
 			break;
 		case "hard":
-			is_ai = true;
-			aiPlayer = new AiPlayerQLearning();
-			break;
-		case "master":
-			is_ai = true;
-			aiPlayer = new AiPlayerNueroEvaluationQLearning();
-			break;
-		case "master":
 			is_ai = true;
 			aiPlayer = new AiPlayerNueroEvaluationQLearning();
 			break;
@@ -136,6 +131,8 @@ function setup()
 	// get static draw sizes
 	boxSize = Math.floor(GAME_HEIGHT / 6) - 1;
 	
+	gameHistory = new GameHistoryAi();
+	
 	// create game
 	new_game();
 	
@@ -201,9 +198,11 @@ function win_senario(playerWin)
 		stroke(0, 93, 80);
 	}
 	// record move for later use 
-	actionRowHTML("Player " + playerWin + " win the Game");
+	actionRowHTML("Player " + playerWin + " win the Game", ai_move);
 	// show wining text
 	text("player " + playerWin + " win!", GAME_WIDTH / 2, GAME_HEIGHT / 2);
+	// download game history for train later
+	gameHistory.download();
 	// stop draw loop for a bit
 	noLoop();
 	// wait a bit for drama and re-start the game
@@ -512,7 +511,11 @@ function mouseClicked()
 		if (nextDirection != NOT_CHOSEN)
 		{
 			pickedToy.add_duration(nextDirection);
-			actionRowHTML("Add direction " + nextDirection + " to toy " + pickedToy.id);
+			actionRowHTML("Add direction " + nextDirection + " to toy " + pickedToy.id, new AiMove(AI_MOVE_ADD_DIRECTION,
+																									pickedToy.id,
+																									nextDirection,
+																									[],
+																									[]));
 			swithPlayer();
 		}
 		else if(onSamePickToy(nowMouseX, nowMouseY))
@@ -523,7 +526,7 @@ function mouseClicked()
 		var nextLocationCheck = NextToNextStep(nowMouseX, nowMouseY);
 		if (nextLocationCheck != NOT_CHOSEN)
 		{
-			actionRowHTML("Move toy " + pickedToy.id + " from (" + pickedToy.x + ", " + pickedToy.y + ") to (" + thisPossibleNextSteps[nextLocationCheck].new_x + ", " + thisPossibleNextSteps[nextLocationCheck].new_y + ")");
+			actionRowHTML("Move toy " + pickedToy.id + " from (" + pickedToy.x + ", " + pickedToy.y + ") to (" + thisPossibleNextSteps[nextLocationCheck].new_x + ", " + thisPossibleNextSteps[nextLocationCheck].new_y + ")", ai_move);
 			pickedToy.jump(thisPossibleNextSteps[nextLocationCheck].new_x, thisPossibleNextSteps[nextLocationCheck].new_y);
 			if (thisPossibleNextSteps[nextLocationCheck].is_jump)
 			{
@@ -531,11 +534,11 @@ function mouseClicked()
 				// if same group or not 
 				if ((pickedToy.id < 4 && thisPossibleNextSteps[nextLocationCheck].jump_over < 4) || (4 <= pickedToy.id && pickedToy.id < 8 && 4 <= thisPossibleNextSteps[nextLocationCheck].jump_over && thisPossibleNextSteps[nextLocationCheck].jump_over < 8))
 				{
-					actionRowHTML("Toy " + pickedToy.id + " jump over toy " + thisPossibleNextSteps[nextLocationCheck].jump_over);
+					actionRowHTML("Toy " + pickedToy.id + " jump over toy " + thisPossibleNextSteps[nextLocationCheck].jump_over, ai_move);
 				}
 				else
 				{
-					actionRowHTML("Toy " + pickedToy.id + " kill toy " + thisPossibleNextSteps[nextLocationCheck].jump_over);
+					actionRowHTML("Toy " + pickedToy.id + " kill toy " + thisPossibleNextSteps[nextLocationCheck].jump_over, ai_move);
 				}
 				thisPossibleNextSteps = game.possible_next_steps(pickedToy.id, false);
 				if (thisPossibleNextSteps.length > 0)
@@ -563,7 +566,7 @@ function mouseClicked()
 		var nextLocationCheck = NextToNextStep(nowMouseX, nowMouseY);
 		if (nextLocationCheck != NOT_CHOSEN)
 		{
-			actionRowHTML("Move toy " + pickedToy.id + " from (" + pickedToy.x + ", " + pickedToy.y + ") to (" + thisPossibleNextSteps[nextLocationCheck].new_x + ", " + thisPossibleNextSteps[nextLocationCheck].new_y + ")");
+			actionRowHTML("Move toy " + pickedToy.id + " from (" + pickedToy.x + ", " + pickedToy.y + ") to (" + thisPossibleNextSteps[nextLocationCheck].new_x + ", " + thisPossibleNextSteps[nextLocationCheck].new_y + ")", ai_move);
 			pickedToy.jump(thisPossibleNextSteps[nextLocationCheck].new_x, thisPossibleNextSteps[nextLocationCheck].new_y);
 			if (thisPossibleNextSteps[nextLocationCheck].is_jump)
 			{
@@ -571,11 +574,11 @@ function mouseClicked()
 				// if same group or not 
 				if ((pickedToy.id < 4 && thisPossibleNextSteps[nextLocationCheck].jump_over < 4) || (4 <= pickedToy.id && pickedToy.id < 8 && 4 <= thisPossibleNextSteps[nextLocationCheck].jump_over && thisPossibleNextSteps[nextLocationCheck].jump_over < 8))
 				{
-					actionRowHTML("Toy " + pickedToy.id + " jump over toy " + thisPossibleNextSteps[nextLocationCheck].jump_over);
+					actionRowHTML("Toy " + pickedToy.id + " jump over toy " + thisPossibleNextSteps[nextLocationCheck].jump_over, ai_move);
 				}
 				else
 				{
-					actionRowHTML("Toy " + pickedToy.id + " kill toy " + thisPossibleNextSteps[nextLocationCheck].jump_over);
+					actionRowHTML("Toy " + pickedToy.id + " kill toy " + thisPossibleNextSteps[nextLocationCheck].jump_over, ai_move);
 				}
 				thisPossibleNextSteps = game.possible_next_steps(pickedToy.id, false);
 				if (thisPossibleNextSteps.length > 0)
@@ -624,7 +627,7 @@ function do_ai_move()
 				{
 					if (game.toys[toyIndex].id == ai_move.pickedToyId)
 					{
-						actionRowHTML("Add direction " + ai_move.newDirection + " to toy " + ai_move.pickedToyId);
+						actionRowHTML("Add direction " + ai_move.newDirection + " to toy " + ai_move.pickedToyId, ai_move);
 						game.toys[toyIndex].add_duration(ai_move.newDirection);
 						break;
 					}
@@ -637,7 +640,7 @@ function do_ai_move()
 				{
 					if (game.toys[toyIndex].id == ai_move.pickedToyId)
 					{
-						actionRowHTML("Move toy " + ai_move.pickedToyId + " from (" + game.toys[toyIndex].x + ", " + game.toys[toyIndex].y + ") to (" + ai_move.newLocation[0] + ", " + ai_move.newLocation[0] + ")");
+						actionRowHTML("Move toy " + ai_move.pickedToyId + " from (" + game.toys[toyIndex].x + ", " + game.toys[toyIndex].y + ") to (" + ai_move.newLocation[0] + ", " + ai_move.newLocation[0] + ")", ai_move);
 						game.toys[toyIndex].x = ai_move.newLocation[0];
 						game.toys[toyIndex].y = ai_move.newLocation[1];
 						aiPickedToy = game.toys[toyIndex];
@@ -649,7 +652,7 @@ function do_ai_move()
 				{
 					if (ai_move.killList[killToyIndex] != NOT_CHOSEN)
 					{
-						actionRowHTML("Toy " + ai_move.pickedToyId + " kill toy " + ai_move.killList[killToyIndex]);
+						actionRowHTML("Toy " + ai_move.pickedToyId + " kill toy " + ai_move.killList[killToyIndex], ai_move);
 						game.kill_list_from_jump(new Move(aiPickedToy, NOT_CHOSEN, NOT_CHOSEN, true, ai_move.killList[killToyIndex]));	
 					}
 				}
@@ -682,7 +685,7 @@ function do_ai_jump_move(toyId)
 	{
 		if (game.toys[toyIndex].id == ai_move.pickedToyId)
 		{
-			actionRowHTML("Move toy " + ai_move.pickedToyId + " from (" + game.toys[toyIndex].x + ", " + game.toys[toyIndex].y + ") to (" + ai_move.newLocation[0] + ", " + ai_move.newLocation[0] + ")");
+			actionRowHTML("Move toy " + ai_move.pickedToyId + " from (" + game.toys[toyIndex].x + ", " + game.toys[toyIndex].y + ") to (" + ai_move.newLocation[0] + ", " + ai_move.newLocation[0] + ")", ai_move);
 			game.toys[toyIndex].x = ai_move.newLocation[0];
 			game.toys[toyIndex].y = ai_move.newLocation[1];
 			aiPickedToy = game.toys[toyIndex];
@@ -694,7 +697,7 @@ function do_ai_jump_move(toyId)
 	{
 		if (ai_move.killList[killToyIndex] != NOT_CHOSEN)
 		{
-			actionRowHTML("Toy " + ai_move.pickedToyId + " kill toy " + ai_move.killList[killToyIndex]);
+			actionRowHTML("Toy " + ai_move.pickedToyId + " kill toy " + ai_move.killList[killToyIndex], ai_move);
 			game.kill_list_from_jump(new Move(aiPickedToy, NOT_CHOSEN, NOT_CHOSEN, true, ai_move.killList[killToyIndex]));	
 		}
 	}
@@ -895,8 +898,11 @@ function addDirectionDot(x, y, direction)
 }
 
 /* add a raw to the action table in the main page */
-function actionRowHTML(description)
+function actionRowHTML(description, actionObj)
 {
 	actionCount++;
+	// print to the user
 	document.getElementById(ACTION_TABLE_ID).innerHTML = '<tr><th scope="row">' + actionCount + '</th><th scope="row">' + player_turn + '</th><th scope="row">' + description + '</th></tr>' + document.getElementById(ACTION_TABLE_ID).innerHTML;
+	// store for later
+	gameHistory.add_move(game.state(), actionObj.encode());
 }

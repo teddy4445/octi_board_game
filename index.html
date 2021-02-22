@@ -13,8 +13,11 @@
 		<meta name="theme-color" content="#ffffff">
 		<script src="https://cdn.jsdelivr.net/npm/p5@1.1.9/lib/p5.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+		<script src="q_learning_ai_policy_learner.js"></script>
+		<script src="game_history_ai.js"></script>
 		<script src="player_move.js"></script>
 		<script src="global_math.js"></script>
+		<script src="toy.js"></script>
 		<script src="ai_policy.js"></script>
 		<script src="move.js"></script>
 		<script src="game.js"></script>
@@ -56,16 +59,7 @@
 			<button class="btn btn-primary btn-block action-table btn-big-font" onclick="return set_second_player('human');">Play with another human</button>
 			<button class="btn btn-success btn-block action-table btn-big-font" onclick="return set_second_player('easy');">Play with easy AI</button>
 			<button class="btn btn-warning btn-block action-table btn-big-font" onclick="return set_second_player('meduim');">Play with meduim AI</button>
-			
-			<!--
-			<button class="btn btn-danger btn-block action-table btn-big-font" onclick="return set_second_player('hard');">Play with hard AI</button>
-			
-			<button class="btn btn-warning btn-block action-table btn-big-font" onclick="alert('Still in work');">Play with meduim AI</button>
-			-->
-			<button class="btn btn-danger btn-block action-table btn-big-font" onclick="return set_second_player('hard');">Play with hard AI</button>
-			
-			<button style="font-weight: 900; background-color: #910d1a;" class="btn btn-danger btn-block action-table btn-big-font" onclick="return set_second_player('master');">Play with master AI</button>
-			
+			<button class="btn btn-danger btn-block action-table btn-big-font" onclick="return set_second_player('hard');">Play with hard AI</button>			
 			
 			<button style="margin-top: 50px;"class="btn btn-info btn-block action-table btn-big-font" onclick="return show_your_ai_panel();">Try your AI</button>
 		</form>

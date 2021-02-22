@@ -358,35 +358,6 @@ class AiPlayerMinMax extends AiPlayer
 	}
 }
 
-class AiPlayerQLearning extends AiPlayer 
-{
-	constructor(player_color = 1)
-	{
-		super();
-		this.player_color = player_color;
-		this.policy = AiPolicy(); // AiPolicy.fromJson(AiUtil.readModel(MODEL_Q_LEARNING));
-	}
-	
-	download_policy()
-	{
-		return this.policy;
-	}
-	
-	do_move(game)
-	{
-		var gameState = game.state(); // vector
-		var allPossbileMoves = game.all_players_possible_moves(this.player_color); // vector of AiMove (plays as our actions)
-		
-		return this.policy.findBestMove(game);
-	}
-	
-	// decide where is the next place to jump to
-	do_continue_jump_move(game, toyId, possibleMoves)
-	{
-		return possibleMoves[0];
-	}
-}
-
 class AiPlayerNueroEvaluationQLearning extends AiPlayer 
 {
 	constructor(player_color = 1)
