@@ -5,6 +5,7 @@ class GameHistoryAi
 {
 	constructor(states = [], start_player_index = 0)
 	{
+		// list of list of [game state as list, player_index]
 		this.states = [];
 		for (var i = 0; i < states.length; i++)
 		{

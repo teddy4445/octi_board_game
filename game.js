@@ -23,6 +23,18 @@ class Game
 		}
 	}
 	
+	copy()
+	{
+		var copyGame = new Game();
+		copyGame.toys = [];
+		for (var toyIndex = 0; toyIndex < this.toys.length; toyIndex++)
+		{
+			var thisToy = this.toys[toyIndex];
+			copyGame.toys.push(new Toy(thisToy.id, thisToy.color, thisToy.x, thisToy.y, thisToy.directions));
+		}
+		return copyGame;
+	}
+	
 	run_move(ai_move)
 	{
 		// first, make copy of the game
@@ -98,6 +110,12 @@ class Game
 			}
 		}
 		return answer;
+	}
+	
+	// return the games state after a move
+	get_state_after_move(move)
+	{
+		return this.copy().run_move(move).state();
 	}
 		
 	
