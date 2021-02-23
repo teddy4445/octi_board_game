@@ -368,6 +368,11 @@ class AiPlayerQLearning extends AiPlayer
 		this.policy = QLearningPolicy(AiUtil.readModel(MODEL_Q_LEARNING));
 	}
 	
+	online_learn_policy(gameHistory)
+	{
+		this.policy.addSample(gameHistory);
+	}
+	
 	download_policy()
 	{
 		this.policy.download();

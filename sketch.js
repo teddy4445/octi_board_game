@@ -27,6 +27,7 @@ let actionCount; // counter of the number of actions for the action table
 // print vars
 let boxSize; // box size to print 
 let aiPlayer; // the ai player
+let aiPlayerName = ""; // the ai player
 let is_ai = false;
 
 // used to learn the game
@@ -41,6 +42,9 @@ let user_do_continue_jump_move_code = null;
 /* set with what player we want to play */
 function set_second_player(type)
 {
+	// just for later referance if needed
+	aiPlayerName = type;
+	
 	switch(type)
 	{
 		case "human":
@@ -203,7 +207,15 @@ function win_senario(playerWin)
 	text("player " + playerWin + " win!", GAME_WIDTH / 2, GAME_HEIGHT / 2);
 	// download game history for train later
 	gameHistory.add_win(playerWin);
+	
+	// if Q-learning ai, update policy
+	if (aiPlayerName == "hard")
+	{
+		aiPlayer.online_learn_policy(gameHistory);
+	}
+	// download the results of the game for AI learning offline 
 	gameHistory.download();
+
 	// stop draw loop for a bit
 	noLoop();
 	// wait a bit for drama and re-start the game
