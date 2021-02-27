@@ -1,5 +1,4 @@
 let MODEL_Q_LEARNING = "qlearning";
-let MODEL_NEURO_EVALUATION_Q_LEARNING = "NueroEvaluationQLearning";
 
 class AiUtil
 {
@@ -14,10 +13,6 @@ class AiUtil
 		{
 			case MODEL_Q_LEARNING:
 				$.get("/data/" + MODEL_Q_LEARNING + ".json", function(data) {
-					return JSON.parse(data);
-				});
-			case MODEL_NEURO_EVALUATION_Q_LEARNING:
-				$.get("/data/" + MODEL_NEURO_EVALUATION_Q_LEARNING + ".json", function(data) {
 					return JSON.parse(data);
 				});
 		}

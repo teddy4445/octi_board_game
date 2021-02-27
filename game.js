@@ -23,6 +23,18 @@ class Game
 		}
 	}
 	
+	copy()
+	{
+		var copyGame = new Game();
+		copyGame.toys = [];
+		for (var toyIndex = 0; toyIndex < this.toys.length; toyIndex++)
+		{
+			var thisToy = this.toys[toyIndex];
+			copyGame.toys.push(new Toy(thisToy.id, thisToy.color, thisToy.x, thisToy.y, thisToy.directions));
+		}
+		return copyGame;
+	}
+	
 	run_move(ai_move)
 	{
 		// first, make copy of the game
@@ -67,9 +79,50 @@ class Game
 	}
 	
 	/*
-		get the game's state as a set of features
+		Get game's state as the location of the toys and there directions
 	*/
 	state()
+	{
+		var answer = [];
+		for (var toyId = 0; toyId < 8; toyId++)
+		{
+			try
+			{
+				var thisToy = this.get_toy_by_id(toyId);
+				answer.push(thisToy.color);
+				answer.push(thisToy.x);
+				answer.push(thisToy.y);
+				var directionStatus = thisToy.directions_status();
+				for (var directionIndex = 0; directionIndex < directionStatus.length; directionIndex++)
+				{
+					answer.push(directionStatus[directionIndex]);
+				}	
+			}
+			catch (error)
+			{
+				answer.push(-1);
+				answer.push(-1);
+				answer.push(-1);
+				for (var directionIndex = 0; directionIndex < 8; directionIndex++)
+				{
+					answer.push(0);
+				}
+			}
+		}
+		return answer;
+	}
+	
+	// return the games state after a move
+	get_state_after_move(move)
+	{
+		return this.copy().run_move(move).state();
+	}
+		
+	
+	/*
+		get the game's general state state so humans can get sence what boards as a set of features
+	*/
+	general_status_state()
 	{
 		// the vector contains the main things we have in the game
 		var firstPlayerToysCount = game.count_player_toys(0);
@@ -109,7 +162,7 @@ class Game
 							firstPlayerUpgrades += 1;
 							break;
 						case 6:
-							firstPlayerUpgrades += 0,5;
+							firstPlayerUpgrades += 0.5;
 							break;
 						case 7:
 							firstPlayerUpgrades += 0;
@@ -142,7 +195,7 @@ class Game
 							secondPlayerUpgrades += 1;
 							break;
 						case 6:
-							secondPlayerUpgrades += 0,5;
+							secondPlayerUpgrades += 0.5;
 							break;
 						case 7:
 							secondPlayerUpgrades += 0;
@@ -513,102 +566,17 @@ class Game
 		}
 		return answer;
 	}
-}
-
-
-/* toy has location, belongs to a player by it's color, has ID to be indentified and directions it can move upon */
-class Toy
-{
-	constructor(id, color, x, y, directions = [])
-	{
-		this.id = id;
-		this.color = color;
-		this.x = x;
-		this.y = y;
-		this.directions = directions;
-	}
 	
-	copy()
-	{
-		return new Toy(this.id, this.color, this.x, this.y, this.directions);
-	}
-	
-	is_in_location(locations)
-	{
-		for (var location_index = 0; location_index < locations.length; location_index++)
-		{
-			if (this.x == locations[location_index][0] && this.y == locations[location_index][1])
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	get_open_directions()
+	get_toy_by_id(toyId)
 	{
 		var answer = [];
-		for (var i = 0; i < 8; i++)
+		for (var i = 0; i < this.toys.length; i++)
 		{
-			if (!this.directions.includes(i))
+			if (this.toys[i].id == toyId)
 			{
-				answer.push(i);
+				return this.toys[i];
 			}
 		}
-		return answer;
-	}
-	
-	add_duration(new_duration)
-	{
-		if (this.directions.includes(new_duration))
-		{
-			throw new Execption("Duration " + new_duration + " is already taken for toy (%" + this.id + ")");
-		}
-		this.directions.push(new_duration);
-	}
-	
-	jump(x, y)
-	{
-		this.x = x;
-		this.y = y;
-	}
-	
-	move(duration)
-	{
-		if (!this.directions.includes(duration))
-		{
-			throw new Execption("Duration " + duration + " is not avalible for toy (%" + this.id + ")");
-		}
-		switch (duration)
-		{
-			case 0:
-				self.x -= 1;
-				break;
-			case 1:
-				self.x -= 1;
-				self.y += 1;
-				break;
-			case 2:
-				self.y += 1;
-				break;
-			case 3:
-				self.x += 1;
-				self.y += 1;
-				break;
-			case 4:
-				self.x += 1;
-				break;
-			case 5:
-				self.x += 1;
-				self.y -= 1;
-				break;
-			case 6:
-				self.y -= 1;
-				break;
-			case 7:
-				self.x -= 1;
-				self.y -= 1;
-				break;
-		}
+		throw Execption("No toy with ID:" + toyId);
 	}
 }

@@ -27,7 +27,11 @@ let actionCount; // counter of the number of actions for the action table
 // print vars
 let boxSize; // box size to print 
 let aiPlayer; // the ai player
+let aiPlayerName = ""; // the ai player
 let is_ai = false;
+
+// used to learn the game
+let gameHistory;
 
 // user ai functions
 let user_do_move_code = null;
@@ -38,6 +42,9 @@ let user_do_continue_jump_move_code = null;
 /* set with what player we want to play */
 function set_second_player(type)
 {
+	// just for later referance if needed
+	aiPlayerName = type;
+	
 	switch(type)
 	{
 		case "human":
@@ -54,14 +61,6 @@ function set_second_player(type)
 		case "hard":
 			is_ai = true;
 			aiPlayer = new AiPlayerQLearning();
-			break;
-		case "master":
-			is_ai = true;
-			aiPlayer = new AiPlayerNueroEvaluationQLearning();
-			break;
-		case "master":
-			is_ai = true;
-			aiPlayer = new AiPlayerNueroEvaluationQLearning();
 			break;
 		case "user":
 			is_ai = true;
@@ -136,6 +135,8 @@ function setup()
 	// get static draw sizes
 	boxSize = Math.floor(GAME_HEIGHT / 6) - 1;
 	
+	gameHistory = new GameHistoryAi();
+	
 	// create game
 	new_game();
 	
@@ -204,6 +205,17 @@ function win_senario(playerWin)
 	actionRowHTML("Player " + playerWin + " win the Game");
 	// show wining text
 	text("player " + playerWin + " win!", GAME_WIDTH / 2, GAME_HEIGHT / 2);
+	// download game history for train later
+	gameHistory.add_win(playerWin);
+	
+	// if Q-learning ai, update policy
+	if (aiPlayerName == "hard")
+	{
+		aiPlayer.online_learn_policy(gameHistory);
+	}
+	// download the results of the game for AI learning offline 
+	gameHistory.download();
+
 	// stop draw loop for a bit
 	noLoop();
 	// wait a bit for drama and re-start the game
@@ -563,7 +575,12 @@ function mouseClicked()
 		var nextLocationCheck = NextToNextStep(nowMouseX, nowMouseY);
 		if (nextLocationCheck != NOT_CHOSEN)
 		{
-			actionRowHTML("Move toy " + pickedToy.id + " from (" + pickedToy.x + ", " + pickedToy.y + ") to (" + thisPossibleNextSteps[nextLocationCheck].new_x + ", " + thisPossibleNextSteps[nextLocationCheck].new_y + ")");
+			actionRowHTML("Move toy " + pickedToy.id + " from (" + pickedToy.x + ", " + pickedToy.y + ") to (" + thisPossibleNextSteps[nextLocationCheck].new_x + ", " + thisPossibleNextSteps[nextLocationCheck].new_y + ")", 
+			new AiMove(AI_MOVE_ADD_DIRECTION,
+								pickedToy.id,
+								-1,
+								[pickedToy.x, pickedToy.y],
+								[thisPossibleNextSteps[nextLocationCheck].jump_over]));
 			pickedToy.jump(thisPossibleNextSteps[nextLocationCheck].new_x, thisPossibleNextSteps[nextLocationCheck].new_y);
 			if (thisPossibleNextSteps[nextLocationCheck].is_jump)
 			{
@@ -624,8 +641,8 @@ function do_ai_move()
 				{
 					if (game.toys[toyIndex].id == ai_move.pickedToyId)
 					{
-						actionRowHTML("Add direction " + ai_move.newDirection + " to toy " + ai_move.pickedToyId);
 						game.toys[toyIndex].add_duration(ai_move.newDirection);
+						actionRowHTML("Add direction " + ai_move.newDirection + " to toy " + ai_move.pickedToyId);
 						break;
 					}
 				}
@@ -637,9 +654,9 @@ function do_ai_move()
 				{
 					if (game.toys[toyIndex].id == ai_move.pickedToyId)
 					{
-						actionRowHTML("Move toy " + ai_move.pickedToyId + " from (" + game.toys[toyIndex].x + ", " + game.toys[toyIndex].y + ") to (" + ai_move.newLocation[0] + ", " + ai_move.newLocation[0] + ")");
 						game.toys[toyIndex].x = ai_move.newLocation[0];
 						game.toys[toyIndex].y = ai_move.newLocation[1];
+						actionRowHTML("Move toy " + ai_move.pickedToyId + " from (" + game.toys[toyIndex].x + ", " + game.toys[toyIndex].y + ") to (" + ai_move.newLocation[0] + ", " + ai_move.newLocation[0] + ")");
 						aiPickedToy = game.toys[toyIndex];
 						break;
 					}
@@ -649,8 +666,8 @@ function do_ai_move()
 				{
 					if (ai_move.killList[killToyIndex] != NOT_CHOSEN)
 					{
-						actionRowHTML("Toy " + ai_move.pickedToyId + " kill toy " + ai_move.killList[killToyIndex]);
 						game.kill_list_from_jump(new Move(aiPickedToy, NOT_CHOSEN, NOT_CHOSEN, true, ai_move.killList[killToyIndex]));	
+						actionRowHTML("Toy " + ai_move.pickedToyId + " kill toy " + ai_move.killList[killToyIndex]);
 					}
 				}
 				// check if we can do next jump steps
@@ -724,7 +741,7 @@ function swithPlayer()
 			// wait a bit for the player to see it's change and run the AI's move
 			setTimeout(function (){
 				do_ai_move();
-			}, 250);
+			}, 500);
 		}
 	}
 	else
@@ -739,14 +756,21 @@ function swithPlayer()
 /* checkc if the mouse on\clicked close to a toy */
 function clickNextToPickToy(checkX, checkY)
 {
+	var closestToy = NOT_CHOSEN;
+	var closestToyDistance = 99999;
 	for (var toyIndex = 0; toyIndex < game.toys.length; toyIndex++)
 	{
-		if ((player_turn == 1 && game.toys[toyIndex].color == 0 && dist(checkX, checkY, (game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize) < boxSize) || (player_turn == 2 && game.toys[toyIndex].color == 1 && dist(checkX, checkY, (game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize) < boxSize * 0.33))
+		var distance = dist(checkX, checkY, (game.toys[toyIndex].x + 0.5) * boxSize, (game.toys[toyIndex].y + 0.5) * boxSize);
+		if ((player_turn == 1 && game.toys[toyIndex].color == 0 && distance < boxSize) || (player_turn == 2 && game.toys[toyIndex].color == 1 && distance < boxSize * 0.33))
 		{
-			return game.toys[toyIndex];
+			if (distance < closestToyDistance)
+			{
+				closestToyDistance = distance;
+				closestToy = game.toys[toyIndex];
+			}
 		}
 	}
-	return NOT_CHOSEN;
+	return closestToy;
 }
 
 /* checkc if the mouse on\clicked close to a next possible tile to move to */
@@ -891,5 +915,8 @@ function addDirectionDot(x, y, direction)
 function actionRowHTML(description)
 {
 	actionCount++;
+	// print to the user
 	document.getElementById(ACTION_TABLE_ID).innerHTML = '<tr><th scope="row">' + actionCount + '</th><th scope="row">' + player_turn + '</th><th scope="row">' + description + '</th></tr>' + document.getElementById(ACTION_TABLE_ID).innerHTML;
+	// store for later
+	gameHistory.add_move(game.state(), player_turn);	
 }

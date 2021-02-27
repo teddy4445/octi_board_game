@@ -13,14 +13,18 @@
 		<meta name="theme-color" content="#ffffff">
 		<script src="https://cdn.jsdelivr.net/npm/p5@1.1.9/lib/p5.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+		<script src="ai_util.js"></script>
+		<script src="q_learning_policy.js"></script>
+		<script src="q_learning_ai_policy_learner.js"></script>
+		<script src="game_history_ai.js"></script>
 		<script src="player_move.js"></script>
 		<script src="global_math.js"></script>
+		<script src="toy.js"></script>
+		<script src="ai_policy.js"></script>
 		<script src="move.js"></script>
 		<script src="game.js"></script>
-		<script src="player.js"></script>
 		<script src="ai_player.js"></script>
 		<script src="sketch.js"></script>
-		<script src="ai_util.js"></script>
 		<link rel="stylesheet" href="style.css">
 
 		  <!-- Bootstrap core CSS -->
@@ -31,7 +35,7 @@
   <!-- Navigation -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
     <div class="container">
-      <a class="navbar-brand" href="/">OCTI Game</a>
+      <a class="navbar-brand" onclick="window.location.reload();">OCTI Game</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -56,16 +60,7 @@
 			<button class="btn btn-primary btn-block action-table btn-big-font" onclick="return set_second_player('human');">Play with another human</button>
 			<button class="btn btn-success btn-block action-table btn-big-font" onclick="return set_second_player('easy');">Play with easy AI</button>
 			<button class="btn btn-warning btn-block action-table btn-big-font" onclick="return set_second_player('meduim');">Play with meduim AI</button>
-			
-			<!--
-			<button class="btn btn-danger btn-block action-table btn-big-font" onclick="return set_second_player('hard');">Play with hard AI</button>
-			
-			<button class="btn btn-warning btn-block action-table btn-big-font" onclick="alert('Still in work');">Play with meduim AI</button>
-			-->
-			<button class="btn btn-danger btn-block action-table btn-big-font" onclick="return set_second_player('hard');">Play with hard AI</button>
-			
-			<button style="font-weight: 900; background-color: #910d1a;" class="btn btn-danger btn-block action-table btn-big-font" onclick="return set_second_player('master');">Play with master AI</button>
-			
+			<button class="btn btn-danger btn-block action-table btn-big-font" onclick="return set_second_player('hard');">Play with hard AI</button>			
 			
 			<button style="margin-top: 50px;"class="btn btn-info btn-block action-table btn-big-font" onclick="return show_your_ai_panel();">Try your AI</button>
 		</form>

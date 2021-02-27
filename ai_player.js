@@ -360,53 +360,34 @@ class AiPlayerMinMax extends AiPlayer
 
 class AiPlayerQLearning extends AiPlayer 
 {
-	constructor(player_color = 1)
+	constructor(player_color = 1, explore_chance = 0.1)
 	{
 		super();
+		this.explore_chance = explore_chance;
 		this.player_color = player_color;
-		this.policy = AiUtil.readModel(MODEL_Q_LEARNING);
+		this.policy = QLearningPolicy(AiUtil.readModel(MODEL_Q_LEARNING));
+	}
+	
+	online_learn_policy(gameHistory)
+	{
+		this.policy.addSample(gameHistory);
 	}
 	
 	download_policy()
 	{
-		return this.policy;
+		this.policy.download();
 	}
 	
 	do_move(game)
 	{
-		return null;
+		var allPossbileMoves = game.all_players_possible_moves(this.player_color);
+		return this.policy.getBestMove(game, allPossbileMoves, this.explore_chance);
 	}
 	
 	// decide where is the next place to jump to
 	do_continue_jump_move(game, toyId, possibleMoves)
 	{
-		return possibleMoves[0];
-	}
-}
-
-class AiPlayerNueroEvaluationQLearning extends AiPlayer 
-{
-	constructor(player_color = 1)
-	{
-		super();
-		this.player_color = player_color;
-		this.policy = AiUtil.readModel(MODEL_NEURO_EVALUATION_Q_LEARNING);
-	}
-	
-	download_policy()
-	{
-		return this.policy;
-	}
-	
-	do_move(game)
-	{
-		return null;
-	}
-	
-	// decide where is the next place to jump to
-	do_continue_jump_move(game, toyId, possibleMoves)
-	{
-		return possibleMoves[0];
+		return this.policy.getBestMove(game, possibleMoves, 0);
 	}
 }
 
