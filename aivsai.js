@@ -136,12 +136,14 @@ function run_game()
 		}
 		// download file and reset
 		win_senario();	
-		// reset game steps 
+		// reset game steps and win flag
 		steps = 0;
 		// count this game 
 		gameIndex++;
 		// mark this event in the table
 		document.getElementById(ACTION_TABLE_ID).innerHTML = '<tr><th scope="row">' + aiPlayerName + '</th><th scope="row">' + aiPlayerName2 + '</th><th scope="row">' + (is_win_id - 1) + '</th></tr>' + document.getElementById(ACTION_TABLE_ID).innerHTML;
+		// set to NOT_CHOSEN to repeat while loop
+		is_win_id = NOT_CHOSEN;
 	}
 }
 
