@@ -13,7 +13,7 @@ class GameHistoryAi
 			start_player_index = (start_player_index + 1) % 2;
 		}
 		
-		download_already = false;
+		download_already = false;	
 	}
 	
 	add_move(state, player_index)
