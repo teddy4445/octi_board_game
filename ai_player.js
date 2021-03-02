@@ -1,4 +1,4 @@
-// consts //
+	// consts //
 let LARGEST_SCORE = 999;
 let POSSIBLE_KILL_PANISHMENT = 100;
 let MAX_DISTANCE_FROM_OTHER_PLAYER_BASE = 6;
@@ -205,7 +205,7 @@ class AiPlayerMinMax extends AiPlayer
 		if (depth == 0)
 		{
 			// score this move finnaly 
-			var answer = this.state_score(game);
+			var answer = this.state_score(game)[0];
 			console.log("Leaf #" + this.testNumber + " with score: " + answer);
 			return answer;
 		}
