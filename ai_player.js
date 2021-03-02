@@ -214,7 +214,7 @@ class AiPlayerMinMax extends AiPlayer
 		if (isMaximizing) 
 		{
 			// init score to override latter 
-			let bestScore = -Infinity;
+			let bestScore = -LARGEST_SCORE -1;
 			// find all the possible moves we can decide from
 			var allPossbileMoves = game.all_players_possible_moves(this.player_color);
 			// pick for start the first move
@@ -224,14 +224,14 @@ class AiPlayerMinMax extends AiPlayer
 				// make copy of game after a given move
 				var next_move_game = game.run_move(allPossbileMoves[actionIndex]);
 				let score = this.minimax(next_move_game, depth - 1, false)[0];
-				if (score > bestScore)
+				if (score[0] > bestScore)
 				{
-					bestScore = score;
+					bestScore = score[0];
 					bestAction = allPossbileMoves[actionIndex];
 				}
-				if (score == bestScore && Math.random() > 0.5)
+				if (score[0] == bestScore && Math.random() > 0.5)
 				{
-					bestScore = score;
+					bestScore = score[0];
 					bestAction = allPossbileMoves[actionIndex];
 				}
 			}
@@ -240,7 +240,7 @@ class AiPlayerMinMax extends AiPlayer
 		else 
 		{
 			// init score to override latter 
-			let bestScore = Infinity;
+			let bestScore = LARGEST_SCORE + 1;
 			// find all the possible moves we can decide from
 			var allPossbileMoves = game.all_players_possible_moves((this.player_color + 1)%2);
 			// pick for start the first move
@@ -250,17 +250,17 @@ class AiPlayerMinMax extends AiPlayer
 				// make copy of game after a given move
 				var next_move_game = game.run_move(allPossbileMoves[actionIndex]);
 				let score = this.minimax(next_move_game, depth - 1, true);
-				if (score < bestScore)
+				if (score[0] < bestScore)
 				{
-					bestScore = score;
+					bestScore = score[0];
 					bestAction = allPossbileMoves[actionIndex];
 				}
-				if (score == bestScore && Math.random() > 0.5)
+				if (score[0] == bestScore && Math.random() > 0.5)
 				{
-					bestScore = score;
+					bestScore = score[0];
 					bestAction = allPossbileMoves[actionIndex];
 				}
-				bestScore = min(score, bestScore);
+				bestScore = min(score[0], bestScore);
 			}
 			return [bestScore, bestAction];
 		}
