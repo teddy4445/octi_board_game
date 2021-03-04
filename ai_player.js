@@ -205,7 +205,7 @@ class AiPlayerMinMax extends AiPlayer
 		if (depth == 0)
 		{
 			// score this move finnaly 
-			var answer = this.state_score(game)[0];
+			var answer = this.state_score(game);
 			console.log("Leaf #" + this.testNumber + " with score: " + answer);
 			return answer;
 		}
@@ -224,14 +224,14 @@ class AiPlayerMinMax extends AiPlayer
 				// make copy of game after a given move
 				var next_move_game = game.run_move(allPossbileMoves[actionIndex]);
 				let score = this.minimax(next_move_game, depth - 1, false)[0];
-				if (score[0] > bestScore)
+				if (score > bestScore)
 				{
-					bestScore = score[0];
+					bestScore = score;
 					bestAction = allPossbileMoves[actionIndex];
 				}
-				if (score[0] == bestScore && Math.random() > 0.5)
+				if (score == bestScore && Math.random() > 0.5)
 				{
-					bestScore = score[0];
+					bestScore = score;
 					bestAction = allPossbileMoves[actionIndex];
 				}
 			}
@@ -249,18 +249,18 @@ class AiPlayerMinMax extends AiPlayer
 			{
 				// make copy of game after a given move
 				var next_move_game = game.run_move(allPossbileMoves[actionIndex]);
-				let score = this.minimax(next_move_game, depth - 1, true);
-				if (score[0] < bestScore)
+				let score = this.minimax(next_move_game, depth - 1, true)[0];
+				if (score < bestScore)
 				{
-					bestScore = score[0];
+					bestScore = score;
 					bestAction = allPossbileMoves[actionIndex];
 				}
-				if (score[0] == bestScore && Math.random() > 0.5)
+				if (score == bestScore && Math.random() > 0.5)
 				{
-					bestScore = score[0];
+					bestScore = score;
 					bestAction = allPossbileMoves[actionIndex];
 				}
-				bestScore = min(score[0], bestScore);
+				bestScore = min(score, bestScore);
 			}
 			return [bestScore, bestAction];
 		}
