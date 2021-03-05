@@ -199,7 +199,7 @@ class AiPlayerMinMax extends AiPlayer
 	
 	minimax(game, depth, isMaximizing) 
 	{
-		console.log("Ai minimax check #" + this.testNumber + " in depth: " + depth);
+		//console.log("Ai minimax check #" + this.testNumber + " in depth: " + depth);
 		this.testNumber++;
 		// if we get to the max depth calc the overall score of the process
 		if (depth == 0)
@@ -209,9 +209,18 @@ class AiPlayerMinMax extends AiPlayer
 			console.log("Leaf #" + this.testNumber + " with score: " + answer);
 			return answer;
 		}
+
+		if (game.is_player_two_win())
+		{
+			return [LARGEST_SCORE, null];
+		}
+		else if (game.is_player_one_win())
+		{
+			return [-1 * LARGEST_SCORE, null];
+		}
 		
 		// max - myself, minimzie the other player
-		if (isMaximizing) 
+		else if (isMaximizing) 
 		{
 			// init score to override latter 
 			let bestScore = -LARGEST_SCORE -1;
