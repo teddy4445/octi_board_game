@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Octi Board Game - AI vs. AI tournament</title>
+		<link rel="apple-touch-icon" sizes="180x180" href="/octi_board_game/favicons/apple-touch-icon.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="/octi_board_game/favicons/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/octi_board_game/favicons/favicon-16x16.png">
+		<link rel="manifest" href="/octi_board_game/favicons/site.webmanifest">
+		<link rel="mask-icon" href="/octi_board_game/favicons/safari-pinned-tab.svg" color="#5bbad5">
+		<meta name="msapplication-TileColor" content="#da532c">
+		<meta name="theme-color" content="#ffffff">
+		<script src="https://cdn.jsdelivr.net/npm/p5@1.1.9/lib/p5.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+		<script src="ai_util.js"></script>
+		<script src="q_learning_policy.js"></script>
+		<script src="q_learning_ai_policy_learner.js"></script>
+		<script src="game_history_ai.js"></script>
+		<script src="player_move.js"></script>
+		<script src="global_math.js"></script>
+		<script src="toy.js"></script>
+		<script src="ai_policy.js"></script>
+		<script src="move.js"></script>
+		<script src="game.js"></script>
+		<script src="ai_player.js"></script>
+		<script src="aivsai.js"></script>
+		<link rel="stylesheet" href="style.css">
+
+		  <!-- Bootstrap core CSS -->
+		  <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	</head>
+	<body>
+
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+    <div class="container">
+      <a class="navbar-brand" href="/">OCTI Game</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/">New Game</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" target="_blank" href="https://tesera.ru/images/items/34098/octi_rules_eng.pdf">rules</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <div class="container">
+    <div class="row" id="table-container">
+      <div class="col-lg-12">
+		<h3 id="game_status" style="text-align: center; margin-top: 20px;"></h3>
+		<h5 id="game_state" style="text-align: center; margin-top: 20px; word-wrap: break-word !important;"></h5>
+      </div>
+      <div class="col-lg-12">
+        <table class="table table-striped action-table">
+		  <thead>
+			<tr>
+			  <th scope="col">Green (0) Player Type</th>
+			  <th scope="col">Red (1) Player Type</th>
+			  <th scope="col">Winner</th>
+			</tr>
+		  </thead>
+		  <tbody id="actions-table">
+		  </tbody>
+		</table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap core JavaScript -->
+  <script src="vendor/jquery/jquery.slim.min.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+  </body>
+</html>

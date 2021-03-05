@@ -199,14 +199,16 @@ class AiPlayerMinMax extends AiPlayer
 	
 	minimax(game, depth, isMaximizing) 
 	{
-		//console.log("Ai minimax check #" + this.testNumber + " in depth: " + depth);
+<<<<<<< HEAD
+		console.log("Ai minimax check #" + this.testNumber + " in depth: " + depth);
+=======
+>>>>>>> 3aee58a45d2aab8462a64b449506cdfe2200f6f9
 		this.testNumber++;
 		// if we get to the max depth calc the overall score of the process
 		if (depth == 0)
 		{
 			// score this move finnaly 
 			var answer = this.state_score(game);
-			console.log("Leaf #" + this.testNumber + " with score: " + answer);
 			return answer;
 		}
 
