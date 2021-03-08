@@ -1,5 +1,6 @@
 	// consts //
-let LARGEST_SCORE = 999;
+let LARGEST_SCORE = 1500;
+let WIN_SCORE = 1000;
 let POSSIBLE_KILL_PANISHMENT = 100;
 let MAX_DISTANCE_FROM_OTHER_PLAYER_BASE = 6;
 let DISTANCE_BONUS_FACTOR = 3;
@@ -49,7 +50,7 @@ class AiPlayer
 			aiPossibleMoves.push(possibleMoves[moveIndex].convert_to_ai_move());
 		}
 		// score each move
-		var bestScore = -999; // -inf just to be replaced 
+		var bestScore = -LARGEST_SCORE; // -inf just to be replaced 
 		for (var actionIndex = 0; actionIndex < aiPossibleMoves.length; actionIndex++)
 		{
 			var score = this.move_score(game, aiPossibleMoves[actionIndex]);
@@ -75,7 +76,7 @@ class AiPlayer
 	// give score to each action (either new direction or jump), update the action's score and return the best score for later use
 	greedy_score(game, actions)
 	{
-		var bestScore = -999; // -inf just to be replaced 
+		var bestScore = -LARGEST_SCORE; // -inf just to be replaced 
 		for (var actionIndex = 0; actionIndex < actions.length; actionIndex++)
 		{
 			var score = 0;
@@ -151,12 +152,12 @@ class AiPlayer
 		if (afterMoveDistance == 0)
 		{
 			console.log("Toy #" + action.pickedToyId + " has winning move to: (" + action.newLocation[0] + ", " + action.newLocation[1] + ")");
-			return LARGEST_SCORE;
+			return WIN_SCORE;
 		}
 		else if (action.killList.length > 0 && action.killList[0] != NOT_CHOSEN) // if we kill someone, we would like to do it
 		{
 			console.log("Toy #" + action.pickedToyId + " has killing move to: (" + action.newLocation[0] + ", " + action.newLocation[1] + ") over toy #" + action.killList[0]);
-			return Math.floor(LARGEST_SCORE / (game.count_player_toys((this.player_color + 1) % 2)));
+			return Math.floor(WIN_SCORE / (game.count_player_toys((this.player_color + 1) % 2)));
 		}
 		
 		// shadow this toy so it won't mess with the analysis
@@ -199,7 +200,7 @@ class AiPlayerMinMax extends AiPlayer
 	
 	minimax(game, depth, isMaximizing) 
 	{
-		console.log("Ai minimax check #" + this.testNumber + " in depth: " + depth);
+		//console.log("Ai minimax check #" + this.testNumber + " in depth: " + depth);
 		this.testNumber++;
 		// if we get to the max depth calc the overall score of the process
 		if (depth == 0)
@@ -211,18 +212,18 @@ class AiPlayerMinMax extends AiPlayer
 
 		if (game.is_player_two_win())
 		{
-			return [LARGEST_SCORE, null];
+			return [WIN_SCORE + depth*100, null];
 		}
 		else if (game.is_player_one_win())
 		{
-			return [-1 * LARGEST_SCORE, null];
+			return [-1 * (WIN_SCORE+ depth*100), null];
 		}
 		
 		// max - myself, minimzie the other player
 		else if (isMaximizing) 
 		{
 			// init score to override latter 
-			let bestScore = -LARGEST_SCORE -1;
+			let bestScore = -LARGEST_SCORE;
 			// find all the possible moves we can decide from
 			var allPossbileMoves = game.all_players_possible_moves(this.player_color);
 			// pick for start the first move
@@ -248,7 +249,7 @@ class AiPlayerMinMax extends AiPlayer
 		else 
 		{
 			// init score to override latter 
-			let bestScore = LARGEST_SCORE + 1;
+			let bestScore = LARGEST_SCORE;
 			// find all the possible moves we can decide from
 			var allPossbileMoves = game.all_players_possible_moves((this.player_color + 1)%2);
 			// pick for start the first move
@@ -285,7 +286,7 @@ class AiPlayerMinMax extends AiPlayer
 			aiPossibleMoves.push(possibleMoves[moveIndex].convert_to_ai_move());
 		}
 		// score each move
-		var bestScore = -999; // -inf just to be replaced 
+		var bestScore = -LARGEST_SCORE; // -inf just to be replaced 
 		for (var actionIndex = 0; actionIndex < aiPossibleMoves.length; actionIndex++)
 		{
 			var score = this.move_score(game, aiPossibleMoves[actionIndex]);
@@ -315,11 +316,11 @@ class AiPlayerMinMax extends AiPlayer
 		// if this leads to winning or lossing, this is the decision from this move
 		if (game.is_player_two_win())
 		{
-			return LARGEST_SCORE;
+			return WIN_SCORE;
 		}
 		else if (game.is_player_one_win())
 		{
-			return -1 * LARGEST_SCORE;
+			return -1 * WIN_SCORE;
 		}
 		
 		var score = 0;
@@ -333,23 +334,23 @@ class AiPlayerMinMax extends AiPlayer
 			if (game.toys[toyIndex].color == 0)
 			{
 				score -= game.toys[toyIndex].directions.length;
-				score -= this.distanceBonous(minDistanceFromBase(1, game.toys[toyIndex].x, game.toys[toyIndex].y));
+				score -= this.distanceBonus(minDistanceFromBase(1, game.toys[toyIndex].x, game.toys[toyIndex].y));
 			}
 			else
 			{
 				score += game.toys[toyIndex].directions.length;
-				score += this.distanceBonous(minDistanceFromBase(0, game.toys[toyIndex].x, game.toys[toyIndex].y));
+				score += this.distanceBonus(minDistanceFromBase(0, game.toys[toyIndex].x, game.toys[toyIndex].y));
 			}
 		}
 		return [score, null];
 	}
 	
-	distanceBonous(distance)
+	distanceBonus(distance)
 	{
 		switch (distance)
 		{
 			case 0:
-				return LARGEST_SCORE;
+				return WIN_SCORE;
 			case 1:
 				return 40;
 			case 2:
@@ -357,7 +358,7 @@ class AiPlayerMinMax extends AiPlayer
 			case 3:
 				return 5;
 			case 4:
-				return 3;
+				return 0;
 			case 5:
 				return -100;
 			case 6:
