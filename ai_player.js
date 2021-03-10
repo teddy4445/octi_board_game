@@ -367,6 +367,7 @@ class AiPlayerMinMax extends AiPlayer
 	}
 }
 
+let FILE_POLICY_DATA = null;
 class AiPlayerQLearning extends AiPlayer 
 {
 	constructor(player_color = 1, explore_chance = 0.1)
@@ -374,7 +375,25 @@ class AiPlayerQLearning extends AiPlayer
 		super();
 		this.explore_chance = explore_chance;
 		this.player_color = player_color;
-		this.policy = QLearningPolicy(AiUtil.readModel(MODEL_Q_LEARNING));
+		AiUtil.readModel(MODEL_Q_LEARNING); // load policy
+		
+		// build the policy object
+		this.policy = null;
+		this.build_policy_object();
+	}
+	
+	build_policy_object()
+	{
+		if (FILE_POLICY_DATA == null)
+		{
+			setTimeout(() => {  
+				this.build_policy_object();
+			}, 100);
+		}
+		else
+		{
+			this.policy = new QLearningPolicy(FILE_POLICY_DATA);
+		}
 	}
 	
 	online_learn_policy(gameHistory)

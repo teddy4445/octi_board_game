@@ -45,37 +45,34 @@ class QLearningPolicy
 	// given the game object, allPossbileMoves and exploration chance, decide what we do next step
 	getBestMove(game, allPossbileMoves, exploreChance)
 	{
-		var nextStepState = {};
-		for (var i = 0; i < allPossbileMoves.length; i++)
-		{
-			var nextState = game.get_state_after_move(allPossbileMoves[i]);
-			try
-			{
-				nextStepState[allPossbileMoves[i]] = this.stateScores[nextState];
-			}
-			catch (error)
-			{
-				nextStepState[allPossbileMoves[i]] = 0; // new - we did not see it yet 
-			}
-		}
-		
 		// find if we go on optimization or exploration
 		if (Math.random() < exploreChance)
 		{
 			// explore - TODO: make it chance relative to the performance and not from things we did not see until now
-			const getMin = object => 
-			{
-				return Object.keys(nextStepState).filter(x => 
-				{
-					 return nextStepState[x] == Math.min.apply(null, Object.values(nextStepState));
-				});
-			};
-			return getMin[Math.floor(Math.random() * getMin.length)];
+			return allPossbileMoves[Math.floor(Math.random() * allPossbileMoves.length)];
 		}
 		else
 		{
+			var nextStepState = {};
+			for (var i = 0; i < allPossbileMoves.length; i++)
+			{
+				var nextState = game.get_state_after_move(allPossbileMoves[i]);
+				try
+				{
+					var score = this.stateScores[this._convert_state_format(nextState)];
+					if (score == null)
+					{
+						throw "State not found";
+					}
+					nextStepState[allPossbileMoves[i].dict_encode()] = score;
+				}
+				catch (error)
+				{
+					nextStepState[allPossbileMoves[i].dict_encode()] = 0; // new - we did not see it yet 
+				}
+			}
 			// optimize - get the state with the biggest score 
-			return Object.keys(nextStepState).reduce((a, b) => nextStepState[a] > nextStepState[b] ? a : b);
+			return AiMove.dict_decode(Object.keys(nextStepState).reduce((a, b) => nextStepState[a] > nextStepState[b] ? a : b));
 		}
 	}
 	
@@ -89,5 +86,11 @@ class QLearningPolicy
 		document.body.appendChild(element);
 		element.click();	
 		document.body.removeChild(element);
+	}
+	
+	// help function responsible for states format converstion
+	_convert_state_format(state)
+	{
+		return state.join();
 	}
 }

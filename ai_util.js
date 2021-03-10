@@ -13,7 +13,7 @@ class AiUtil
 		{
 			case MODEL_Q_LEARNING:
 				$.get("/data/" + MODEL_Q_LEARNING + ".json", function(data) {
-					return JSON.parse(data);
+					FILE_POLICY_DATA = data;
 				});
 		}
 	}
