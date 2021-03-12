@@ -12,7 +12,7 @@ class AiUtil
 		switch (modelName)
 		{
 			case MODEL_Q_LEARNING:
-				$.get("/data/" + MODEL_Q_LEARNING + ".json", function(data) {
+				$.get("octi_board_game/data/" + MODEL_Q_LEARNING + ".json", function(data) {
 					FILE_POLICY_DATA = data;
 				});
 		}

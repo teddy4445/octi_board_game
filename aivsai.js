@@ -26,36 +26,37 @@ let aiPlayerName2 = ""; // the ai player
 
 // used to learn the game
 let gameHistory;
+let matchGameHistory;
 
 let gameIndex;
 
 // manul repeat training set
-let REPEATS = {"Greedy-Greedy": 100,
-				"Greedy-MinMax (1)": 100,
-				"MinMax (1)-Greedy": 100,
-				"Greedy-MinMax (2)": 100,
-				"MinMax (2)-Greedy": 100,
-				"Greedy-MinMax (3)": 100,
-				"MinMax (3)-Greedy": 100,
-				"MinMax (1)-MinMax (1)": 100,
-				"MinMax (1)-MinMax (2)": 100,
-				"MinMax (2)-MinMax (1)": 100,
-				"MinMax (1)-MinMax (3)": 100,
-				"MinMax (3)-MinMax (1)": 100,
-				"MinMax (2)-MinMax (2)": 100,
-				"MinMax (2)-MinMax (3)": 100,
-				"MinMax (3)-MinMax (2)": 100,
-				"MinMax (3)-MinMax (3)": 100,
-				"MinMax (3)-MinMax (3)": 100,
-				"Greedy-RL": 500,
-				"RL-Greedy": 500,
-				"MinMax (1)-RL": 500,
-				"RL-MinMax (1)": 500,
-				"MinMax (2)-RL": 1500,
-				"RL-MinMax (2)": 1500,
-				"MinMax (3)-RL": 1500,
-				"RL-MinMax (3)": 1500,
-				"RL-RL": 10000}
+let REPEATS = {"Greedy-Greedy": 1,
+				"Greedy-MinMax (1)": 1,
+				"MinMax (1)-Greedy": 1,
+				"Greedy-MinMax (2)": 1,
+				"MinMax (2)-Greedy": 1,
+				"Greedy-MinMax (3)": 1,
+				"MinMax (3)-Greedy": 1,
+				"MinMax (1)-MinMax (1)": 1,
+				"MinMax (1)-MinMax (2)": 1,
+				"MinMax (2)-MinMax (1)": 1,
+				"MinMax (1)-MinMax (3)": 1,
+				"MinMax (3)-MinMax (1)": 1,
+				"MinMax (2)-MinMax (2)": 1,
+				"MinMax (2)-MinMax (3)": 1,
+				"MinMax (3)-MinMax (2)": 1,
+				"MinMax (3)-MinMax (3)": 1,
+				"MinMax (3)-MinMax (3)": 1,
+				"Greedy-RL": 5,
+				"RL-Greedy": 5,
+				"MinMax (1)-RL": 5,
+				"RL-MinMax (1)": 5,
+				"MinMax (2)-RL": 15,
+				"RL-MinMax (2)": 15,
+				"MinMax (3)-RL": 15,
+				"RL-MinMax (3)": 15,
+				"RL-RL": 1}
 
 /* end - global varibales */
 
@@ -65,6 +66,7 @@ function setup()
 {
 	// start the service that record important stuff 
 	gameHistory = new GameHistoryAi();
+	matchGameHistory = new ExtendedGameHistoryAi();
 	
 	// create game
 	game = new Game();
@@ -78,7 +80,7 @@ function setup()
 	noLoop();
 	
 	// run the game manully
-	pick_ai_game_and_run();
+	setTimeout(pick_ai_game_and_run, 3000);
 }
 
 function pick_ai_game_and_run()
@@ -98,19 +100,21 @@ function pick_ai_game_and_run()
 			aiPlayerName2 = names[j];
 			aiPlayer2 = aiPlayers2[j];
 			
+			// annonce the match
+			console.log("Laidies and gentelmen, the next battle is between " + aiPlayerName + " and " + aiPlayer2  + " - please prepare for " + REPEATS[aiPlayerName + "-" + aiPlayerName2] + " rounds ahead of you! We can have only one winner!");
+			
 			// run the matches
 			run_game();
 			
-			// TODO: delete later when all players will be ready
-			return false;
+			document.getElementById(ACTION_TABLE_ID).innerHTML = '<tr><th scope="row">' + aiPlayerName + '</th><th scope="row">' + aiPlayerName2 + '</th><th scope="row">' + REPEATS[aiPlayerName + "-" + aiPlayerName2] + '</th></tr>' + document.getElementById(ACTION_TABLE_ID).innerHTML;
 		}
 	}
 }
 
 function run_game()
 {
-	var statusElement = document.getElementById("game_status");
-	var stateElement = document.getElementById("game_state");
+	// var statusElement = document.getElementById("game_status");
+	// var stateElement = document.getElementById("game_state");
 	let is_win_id = NOT_CHOSEN;
 	
 	let repeats = REPEATS[aiPlayerName + "-" + aiPlayerName2];
@@ -128,8 +132,8 @@ function run_game()
 			player_turn = (player_turn + 1)%2;
 			
 			// debug prints
-			statusElement.innerHTML = "Steps: " + steps;
-			stateElement.innerHTML = "State:[" + game.state() + "]";
+			//statusElement.innerHTML = "Steps: " + steps;
+			//stateElement.innerHTML = "State:[" + game.state() + "]";
 			
 			// update flag win in the end of the turn
 			is_win_id = is_win();
@@ -141,10 +145,13 @@ function run_game()
 		// count this game 
 		gameIndex++;
 		// mark this event in the table
-		document.getElementById(ACTION_TABLE_ID).innerHTML = '<tr><th scope="row">' + aiPlayerName + '</th><th scope="row">' + aiPlayerName2 + '</th><th scope="row">' + (is_win_id - 1) + '</th></tr>' + document.getElementById(ACTION_TABLE_ID).innerHTML;
+		// document.getElementById(ACTION_TABLE_ID).innerHTML = '<tr><th scope="row">' + aiPlayerName + '</th><th scope="row">' + aiPlayerName2 + '</th><th scope="row">' + (is_win_id - 1) + '</th></tr>' + document.getElementById(ACTION_TABLE_ID).innerHTML;
 		// set to NOT_CHOSEN to repeat while loop
 		is_win_id = NOT_CHOSEN;
 	}
+	
+	// download the summery of the games between the two players
+	matchGameHistory.download();
 }
 
 function do_ai_move()
@@ -276,7 +283,7 @@ function win_senario(playerWin)
 		aiPlayer2.online_learn_policy(gameHistory);
 	}
 	// download the results of the game for AI learning offline 
-	gameHistory.download();
+	matchGameHistory.add_game(gameHistory.transfer());
 	
 	// reset game
 	game = new Game();

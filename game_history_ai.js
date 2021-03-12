@@ -26,6 +26,13 @@ class GameHistoryAi
 		this.states.push(["winner", win_player]);	
 	}
 	
+	transfer()
+	{
+		var answer = this.states;
+		this.states = [];
+		return answer;
+	}
+	
 	download()
 	{
 		if (!download_already)
@@ -33,7 +40,7 @@ class GameHistoryAi
 			var dateGame = new Date().toLocaleString().replace(',','').replaceAll("/", "_").replaceAll(" ", "__").replaceAll(":", "_");
 			var element = document.createElement('a');
 			element.setAttribute('href', "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.states)));
-			element.setAttribute('download', "game_" + dateGame + ".js");	
+			element.setAttribute('download', "game_" + dateGame + ".json");	
 			element.style.display = 'none';
 			document.body.appendChild(element);
 			element.click();	
