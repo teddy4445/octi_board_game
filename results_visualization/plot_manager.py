@@ -87,8 +87,8 @@ def plot_paper_graph():
     multi_bar_with_error(
         labels=['Greedy', 'MinMax', 'RL'],
         x_groups=['Player {}'.format(i + 1) for i in range(5)],
-        y_list=[[0.4, 0.2, 0.1, 0, 0], [0.7, 0.5, 0.4, 0.4, 0.2],
-                [0.9, 0.7, 0.5, 0.4, 0.2]],
+        y_list=[[0.4, 0.2, 0.1, 0, 0], [0.6, 0.4, 0.3, 0.3, 0],
+                [0.8, 0.6, 0.3, 0.4, 0.1]],
         error=[[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]],
         y_range_axis=(0, 1),
         x_name='AI agent',
@@ -102,7 +102,7 @@ def plot_paper_graph():
     multi_bar_with_error(
         labels=['Greedy', 'MinMax', 'RL'],
         x_groups=['Greedy', 'MinMax', 'RL'],
-        y_list=[[50, 97, 99], [3, 50, 28], [1, 72, 50]],
+        y_list=[[50, 97, 99], [3, 50, 72], [1, 28, 50]],
         error=[[0, 0, 0], [0, 0, 0], [0, 0, 0]],
         y_range_axis=(0, 100),
         x_name='AI agent',
