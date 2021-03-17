@@ -86,8 +86,8 @@ function setup()
 function pick_ai_game_and_run()
 {
 	var names = ["Greedy", "MinMax (1)", "MinMax (2)", "MinMax (3)", "RL"];
-	var aiPlayers1 = [new AiPlayer(), new AiPlayerMinMax(0, 1), new AiPlayerMinMax(0, 2), new AiPlayerMinMax(0, 3), new AiPlayer()]; // new AiPlayerQLearning()];
-	var aiPlayers2 = [new AiPlayer(), new AiPlayerMinMax(1, 1), new AiPlayerMinMax(1, 2), new AiPlayerMinMax(1, 3), new AiPlayer()]; // new AiPlayerQLearning()];
+	var aiPlayers1 = [new AiPlayer(), new AiPlayerMinMax(0, 1), new AiPlayerMinMax(0, 2), new AiPlayerMinMax(0, 3), new AiPlayerQLearning()]; 
+	var aiPlayers2 = [new AiPlayer(), new AiPlayerMinMax(1, 1), new AiPlayerMinMax(1, 2), new AiPlayerMinMax(1, 3), new AiPlayerQLearning()]; 
 	// set players
 	
 	for (var i = 0; i < names.length; i++)
@@ -101,7 +101,7 @@ function pick_ai_game_and_run()
 			aiPlayer2 = aiPlayers2[j];
 			
 			// annonce the match
-			console.log("Laidies and gentelmen, the next battle is between " + aiPlayerName + " and " + aiPlayer2  + " - please prepare for " + REPEATS[aiPlayerName + "-" + aiPlayerName2] + " rounds ahead of you! We can have only one winner!");
+			console.log("Laidies and gentelmen, the next battle is between " + aiPlayerName + " and " + aiPlayerName2  + " - please prepare for " + REPEATS[aiPlayerName + "-" + aiPlayerName2] + " rounds ahead of you! We can have only one winner!");
 			
 			// run the matches
 			run_game();
@@ -221,7 +221,6 @@ function do_ai_move()
 	{
 		var error_message = "AI currently not working... please make its move. The error recorded is: " + error;
 		console.error(error_message);
-		throw error;
 	}
 	return false;
 }
